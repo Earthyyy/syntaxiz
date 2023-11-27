@@ -71,7 +71,10 @@ const Canva = () => {
     (event) => {
       event.preventDefault();
 
-      const type = event.dataTransfer.getData("application/reactflow");
+      const type = event.dataTransfer.getData("application/reactflow#type");
+      const content = event.dataTransfer.getData(
+        "application/reactflow#content"
+      );
 
       // check if the dropped element is valid
       if (typeof type === "undefined" || !type) {
@@ -89,7 +92,7 @@ const Canva = () => {
         id: getId(),
         type,
         position,
-        data: { label: `${type} node` },
+        data: { label: content },
       };
 
       setNodes((nds) => nds.concat(newNode));

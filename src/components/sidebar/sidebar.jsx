@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/accordion";
 
 const Sidebar = () => {
-  const onDragStart = (event, nodeType) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
+  const onDragStart = (event, nodeType, nodeContent) => {
+    event.dataTransfer.setData("application/reactflow#type", nodeType);
+    event.dataTransfer.setData("application/reactflow#content", nodeContent);
     event.dataTransfer.effectAllowed = "move";
   };
   return (
@@ -28,7 +29,8 @@ const Sidebar = () => {
             <ul>
               <ListItem content="BinOp" handler={onDragStart} />
               <ListItem content="BoolOp" handler={onDragStart} />
-              <ListItem content="UnaryOp" handler={onDragStart} />
+              <ListItem content="Assign" handler={onDragStart} />
+              <ListItem content="Compare" handler={onDragStart} />
             </ul>
           </AccordionContent>
         </AccordionItem>
@@ -38,8 +40,8 @@ const Sidebar = () => {
           </AccordionTrigger>
           <AccordionContent>
             <ul>
-              <ListItem content="If" />
-              <ListItem content="While" />
+              <ListItem content="If" handler={onDragStart} />
+              <ListItem content="While" handler={onDragStart} />
             </ul>
           </AccordionContent>
         </AccordionItem>
@@ -49,8 +51,9 @@ const Sidebar = () => {
           </AccordionTrigger>
           <AccordionContent>
             <ul>
-              <ListItem content="Id" />
-              <ListItem content="Constant" />
+              <ListItem content="Id" leaf handler={onDragStart} />
+              <ListItem content="Constant" leaf handler={onDragStart} />
+              <ListItem content="Op" leaf handler={onDragStart} />
             </ul>
           </AccordionContent>
         </AccordionItem>
