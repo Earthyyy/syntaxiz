@@ -85,6 +85,10 @@ select {
     --input: 240 5.9% 90%;
     --ring: 142.1 76.2% 36.3%;
     --radius: 1rem;
+
+    --accordion-hover: 220 14% 96%;
+    --accordion: 220 9% 46%;
+    --accordion-foreground: 221 39% 11%;
   }
  
   .dark {
