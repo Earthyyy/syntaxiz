@@ -8,6 +8,10 @@ import {
 } from "@/components/ui/accordion";
 
 const Sidebar = () => {
+  const onDragStart = (event, nodeType) => {
+    event.dataTransfer.setData("application/reactflow", nodeType);
+    event.dataTransfer.effectAllowed = "move";
+  };
   return (
     <div
       style={{
@@ -15,16 +19,16 @@ const Sidebar = () => {
         width: "248px",
       }}
     >
-      <Accordion type="multiple" collapsible>
+      <Accordion type="multiple" collapsible="true">
         <AccordionItem value="operations">
           <AccordionTrigger className="mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
             Operations
           </AccordionTrigger>
           <AccordionContent>
             <ul>
-              <ListItem content="BinOp" />
-              <ListItem content="BoolOp" />
-              <ListItem content="UnaryOp" />
+              <ListItem content="BinOp" handler={onDragStart} />
+              <ListItem content="BoolOp" handler={onDragStart} />
+              <ListItem content="UnaryOp" handler={onDragStart} />
             </ul>
           </AccordionContent>
         </AccordionItem>
