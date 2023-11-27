@@ -1,5 +1,5 @@
 "use client";
-import ListItem from "@/components/accordion/list-item";
+import ListItem from "@/components/sidebar/accordion/list-item";
 import {
   Accordion,
   AccordionContent,
