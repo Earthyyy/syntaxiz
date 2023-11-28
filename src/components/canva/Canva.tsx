@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import ReactFlow, {
   Background,
+  BackgroundVariant,
   Edge,
   Node,
   OnConnect,
@@ -113,8 +114,7 @@ const Canva = () => {
         nodeTypes={nodeTypes}
         fitView
       >
-        {/* @ts-ignore */}
-        <Background variant="dots" gap={12} size={1} />
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       </ReactFlow>
     </div>
   );
