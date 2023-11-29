@@ -13,7 +13,7 @@ export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
       <div
         className={cn(
           "flex flex-col  border border-solid border-gray-200 rounded-2xl shadow-sm w-[148px]",
-          selected && "border-black"
+          selected && "border-black border-2"
         )}
       >
         <div className="font-mono font-bold p-1 border-b border-solid bg-[#FAFAFE] text-center rounded-t-2xl">
