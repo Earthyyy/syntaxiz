@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
+  Connection,
   Edge,
   Node,
   OnConnect,
@@ -12,6 +13,8 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  useEdgesState,
+  useNodesState,
 } from "reactflow";
 
 import "reactflow/dist/style.css";
@@ -42,34 +45,32 @@ const initialEdges: Edge[] = [];
 
 let id = 0;
 const getId = () => `dndnode_${id++}`;
+const generateId = () => {
+  const id = Math.random().toString(36).substr(2, 9);
+  return id;
+};
 
 const Canva = () => {
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
-
   const onConnect: OnConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    []
+    (params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
+    [setEdges]
   );
 
-  const onDragOver = useCallback((event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+    },
+    []
+  );
 
   const onDrop = useCallback(
-    (event) => {
+    (event: any) => {
       event.preventDefault();
 
       const type = event.dataTransfer.getData("application/reactflow#type");
@@ -77,18 +78,15 @@ const Canva = () => {
         "application/reactflow#content"
       );
 
-      // check if the dropped element is valid
       if (typeof type === "undefined" || !type) {
         return;
       }
 
-      // reactFlowInstance.project was renamed to reactFlowInstance.screenToFlowPosition
-      // and you don't need to subtract the reactFlowBounds.left/top anymore
-      // details: https://reactflow.dev/whats-new/2023-11-10
       const position = reactFlowInstance?.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
       }) as XYPosition;
+
       const newNode: Node = {
         id: getId(),
         type,
@@ -97,8 +95,72 @@ const Canva = () => {
       };
 
       setNodes((nds) => nds.concat(newNode));
+
+      if (content === "While" || content === "If") {
+        const testNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: position.x - 100, y: position.y + 100 },
+          data: { label: "test" },
+        };
+
+        const bodyNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: position.x + 100, y: position.y + 100 },
+          data: { label: "body" },
+        };
+
+        setNodes((nds) => nds.concat(testNode));
+        setNodes((nds) => nds.concat(bodyNode));
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: newNode.id,
+              target: testNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: newNode.id,
+              target: bodyNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+
+        if (content === "If") {
+          const orelseNode: Node = {
+            id: getId(),
+            type: "simpleTreeNode",
+            position: { x: position.x + 300, y: position.y + 100 },
+            data: { label: "orelse" },
+          };
+
+          setNodes((nds) => nds.concat(orelseNode));
+          setEdges((eds) =>
+            addEdge(
+              {
+                id: generateId(),
+                source: newNode.id,
+                target: orelseNode.id,
+                animated: true,
+              },
+              eds
+            )
+          );
+        }
+      }
     },
-    [reactFlowInstance]
+    [reactFlowInstance, setEdges, setNodes]
   );
   return (
     <div className="flex-1 border-l">
@@ -112,6 +174,10 @@ const Canva = () => {
         onDrop={onDrop}
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
+        deleteKeyCode={"Delete"}
+        proOptions={{
+          hideAttribution: true,
+        }}
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
