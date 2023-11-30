@@ -45,7 +45,7 @@ const generateId = () => {
   return id;
 };
 
-const Canva = () => {
+const Flow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
@@ -216,4 +216,4 @@ const Canva = () => {
   );
 };
 
-export default Canva;
+export default Flow;

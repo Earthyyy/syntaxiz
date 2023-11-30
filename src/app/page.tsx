@@ -1,6 +1,6 @@
 "use client";
 
-import Canva from "@/components/canva/canva";
+import Flow from "@/components/canva/flow";
 import Sidebar from "@/components/sidebar/sidebar";
 import { ReactFlowProvider } from "reactflow";
 
@@ -9,7 +9,7 @@ export default function Home() {
     <main className="flex relative flex-1">
       <ReactFlowProvider>
         <Sidebar />
-        <Canva />
+        <Flow />
       </ReactFlowProvider>
     </main>
   );
