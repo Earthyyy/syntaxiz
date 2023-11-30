@@ -31,7 +31,7 @@ const initialNodes: Node[] = [
   {
     id: "1",
     type: "simpleTreeNode",
-    data: { label: "body", type: "root" },
+    data: { label: "body", type: "root", value: null },
     position: { x: 0, y: 0 },
   },
 ];
