@@ -2,8 +2,14 @@ import { cn } from "@/lib/utils";
 import { Handle, NodeProps, Position } from "reactflow";
 
 type NodeData = {
-  label: string;
+  label: "Id" | "Constant" | "Op";
   type: "root" | "node" | "leaf";
+};
+
+const defaultValues = {
+  Id: "x",
+  Constant: 50,
+  Op: "+",
 };
 
 export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
@@ -20,7 +26,7 @@ export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
           {data?.label}
         </div>
         <input
-          defaultValue={"50"}
+          defaultValue={defaultValues[data?.label] ?? ""}
           type="text"
           name="value"
           id="value"
