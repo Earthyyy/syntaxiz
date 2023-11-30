@@ -7,10 +7,8 @@ import { ReactFlowProvider } from "reactflow";
 export default function Home() {
   return (
     <main className="flex relative flex-1">
-      <ReactFlowProvider>
-        <Sidebar />
-        <Flow />
-      </ReactFlowProvider>
+      <Sidebar />
+      <Flow />
     </main>
   );
 }
