@@ -120,7 +120,7 @@ const Flow = () => {
         id: getId(),
         type,
         position,
-        data: { label: content },
+        data: { label: content, value: null },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -130,14 +130,14 @@ const Flow = () => {
           id: getId(),
           type: "simpleTreeNode",
           position: { x: position.x - 100, y: position.y + 100 },
-          data: { label: "test" },
+          data: { label: "test", value: null },
         };
 
         const bodyNode: Node = {
           id: getId(),
           type: "simpleTreeNode",
           position: { x: position.x + 100, y: position.y + 100 },
-          data: { label: "body" },
+          data: { label: "body", value: null },
         };
 
         setNodes((nds) => nds.concat(testNode));
@@ -171,7 +171,7 @@ const Flow = () => {
             id: getId(),
             type: "simpleTreeNode",
             position: { x: position.x + 300, y: position.y + 100 },
-            data: { label: "orelse" },
+            data: { label: "orelse", value: null },
           };
 
           setNodes((nds) => nds.concat(orelseNode));

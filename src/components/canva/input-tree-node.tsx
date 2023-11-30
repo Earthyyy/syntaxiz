@@ -1,5 +1,11 @@
 import { cn } from "@/lib/utils";
-import { Handle, NodeProps, Position } from "reactflow";
+import {
+  Handle,
+  NodeProps,
+  Position,
+  useReactFlow,
+  useStoreApi,
+} from "reactflow";
 
 type NodeData = {
   label: "Id" | "Constant" | "Op";
@@ -12,7 +18,31 @@ const defaultValues = {
   Op: "+",
 };
 
-export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
+export default function InputTreeNode({
+  data,
+  selected,
+  id,
+}: NodeProps<NodeData>) {
+  const reactFlow = useReactFlow();
+  const { setNodes } = reactFlow;
+
+  const onChange = (event: any) => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              value: event.target.value,
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
   return (
     <>
       <Handle type="target" position={Position.Top} />
@@ -30,6 +60,7 @@ export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
           type="text"
           name="value"
           id="value"
+          onChange={onChange}
           className="relative items-center justify-center bg-white p-2 flex rounded-b-2xl text-xs text-center focus:outline-none"
         />
       </div>
