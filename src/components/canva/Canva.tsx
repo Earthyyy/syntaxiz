@@ -67,12 +67,22 @@ const Canva = () => {
   const onNodesDelete: OnNodesDelete = useCallback(
     (deleted) => {
       const deletedIds = deleted.map((node) => node.id);
+      const descendantIds: string[] = [];
 
-      // delete descendants till reaching the leafs
+      function findDescendants(nodeIds: string[]) {
+        // TODO: remove the second filter when you force the tree structure
+        let temp = edges
+          .filter((edge) => nodeIds.includes(edge.source))
+          .map((edge) => edge.target)
+          .filter((nodeId) => !descendantIds.includes(nodeId));
 
-      const descendantIds = edges
-        .filter((edge) => deletedIds.includes(edge.source))
-        .map((edge) => edge.target);
+        if (temp.length > 0) {
+          descendantIds.push(...temp);
+          findDescendants(temp);
+        }
+      }
+
+      findDescendants(deletedIds);
 
       const allIds = [...deletedIds, ...descendantIds];
 
