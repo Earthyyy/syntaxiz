@@ -8,6 +8,7 @@ import ReactFlow, {
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
+  OnNodesDelete,
   ReactFlowInstance,
   XYPosition,
   addEdge,
@@ -32,12 +33,6 @@ const initialNodes: Node[] = [
     type: "simpleTreeNode",
     data: { label: "body", type: "root" },
     position: { x: 0, y: 0 },
-  },
-  {
-    id: "2",
-    type: "inputTreeNode",
-    data: { label: "id", type: "node" },
-    position: { x: 100, y: 100 },
   },
 ];
 
@@ -67,6 +62,30 @@ const Canva = () => {
       event.dataTransfer.dropEffect = "move";
     },
     []
+  );
+
+  const onNodesDelete: OnNodesDelete = useCallback(
+    (deleted) => {
+      const deletedIds = deleted.map((node) => node.id);
+
+      // delete descendants till reaching the leafs
+
+      const descendantIds = edges
+        .filter((edge) => deletedIds.includes(edge.source))
+        .map((edge) => edge.target);
+
+      const allIds = [...deletedIds, ...descendantIds];
+
+      const newNodes = nodes.filter((node) => !allIds.includes(node.id));
+
+      const newEdges = edges.filter(
+        (edge) => !allIds.includes(edge.source) && !allIds.includes(edge.target)
+      );
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+    },
+    [nodes, edges]
   );
 
   const onDrop = useCallback(
@@ -175,6 +194,7 @@ const Canva = () => {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         deleteKeyCode={"Delete"}
+        onNodesDelete={onNodesDelete}
         proOptions={{
           hideAttribution: true,
         }}
