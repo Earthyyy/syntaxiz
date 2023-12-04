@@ -1,270 +1,195 @@
+module.exports = { translateProgram /* other exported functions */ };
 function translateProgram(tree, assemblyCode) {
-    translateBody(tree["body"], assemblyCode);
+    translateBody(tree, assemblyCode);
 }
-
-function translateBody(node, assemblyCode) {
-    for (let key in node) {
-        if (key !== "noeud") {
-            translateStatement(node[key], assemblyCode);
-        }
-    }
+function translateBody(nodes, assemblyCode) {
+  let childs=nodes["children"]
+  
+  const nodeValues = Object.values(childs);
+  for (let node of nodeValues) {
+      translateStatement(node, assemblyCode);
+  }
 }
-
 function translateStatement(node, assemblyCode) {
-    if (node["noeud"] === "Assignment") {
-        translateAssignment(node, assemblyCode);
-    } else if (node["noeud"] === "while") {
-        translateWhileLoop(node, assemblyCode);
-    } else if (node["noeud"] === "if") {
-        translateIfStatement(node, assemblyCode);
-    } else if (node["noeud"] === "body") {
-        translateBody(node, assemblyCode);
-    } else if (node["noeud"] === "for") {
-        translateForLoop(node, assemblyCode);
-    }
-}
+  if (node && node["node"]) {
+      const nodeType = node["node"];
 
+      if (nodeType === "assign") {
+          translateAssignment(node, assemblyCode);
+      } else if (nodeType === "while") {
+          translateWhileLoop(node, assemblyCode);
+      } else if (nodeType === "if") {
+          translateIfStatement(node, assemblyCode);
+      }
+      // Add more cases for other statement types if needed
+  }
+}
 function translateAssignment(node, assemblyCode) {
-    let id = node["id"];
-    if ('cst' in node) {
-        let rightOperand = node['cst'];
-        let assemblyInstruction = `MOV ${id}, ${rightOperand}`;
+    const id = node["children"][0]["value"];
+    const valueNode = node["children"][1];
+
+    if (valueNode["node"] === "constant") {
+        const rightOperand = valueNode["value"];
+        assign(id,rightOperand,assemblyCode);
+    } else if (valueNode["node"] === "binop") {
+        binopStatement(valueNode, assemblyCode);
+        let bigId = node['children'][0]['value'];
+        const assemblyInstruction = `MOV |${bigId}|, ebx`;
         assemblyCode.push(assemblyInstruction);
-    } else if ('binop' in node) {
-        binopStatement(node, assemblyCode);
-    }
+    }else if (valueNode["node"] === "id") {
+        const rightOperand = '|'+valueNode["value"]+'|';
+        assign(id,rightOperand,assemblyCode);
+}}
+function assign(id,cst,assemblyCode){
+    const assemblyInstruction = `MOV eax, ${cst}\nMOV |${id}|, eax`;
+    assemblyCode.push(assemblyInstruction);
 }
-
-function binopStatement(node, assemblyCode) {
-    let bigId = node['id'];
-    let binNode = node['binop'];
-    let smallId = binNode['id'];
-    let op2 = binNode['op'];
-    let bop2 = getOperator(op2);
-
-    if ('binop' in binNode) {
-        binopStatement(node['binop'], assemblyCode);
-    } else if ('cst' in binNode) {
-        let right = binNode['cst'];
-        let assemblyInstruction = `${bop2} ${smallId}, ${right}`;
-        assemblyCode.push(assemblyInstruction);
-    } else if ('id2' in binNode) {
-        let right = binNode['id2'];
-        let assemblyInstruction = `${bop2} ${smallId}, ${right}`;
-        assemblyCode.push(assemblyInstruction);
-    }
-    if (!('op' in node)) {
-        let assemblyInstruction = `MOV ${bigId}, ${smallId}`;
-        assemblyCode.push(assemblyInstruction);
-    } else if ('op' in node) {
-        let op1 = node['op'];
-        let bop1 = getOperator(op1);
-        let assemblyInstruction = `${bop1} ${bigId}, ${smallId}`;
-        assemblyCode.push(assemblyInstruction);
-    }
-}
-
 function translateWhileLoop(node, assemblyCode) {
-    let condition = node["condition_while"];
-    assemblyCode.push("LOOP_WHILE_START_LABEL:");
-    translateConditionWhile(condition, assemblyCode);
-    translateBody(node["body"], assemblyCode);
-    assemblyCode.push("JUMP LOOP_START_LABEL");
-    assemblyCode.push("LOOP_WHILE_END_LABEL:");
-}
+    const condition = node["children"][0];
+    const body = node["children"][1];
 
-function translateForLoop(node, assemblyCode) {
-    let condition = node["condition_for"];
-    let left = parseInt(condition["left"]);
-    assemblyCode.push(`elx , ${left}`);
-    assemblyCode.push("LOOP_FOR_START_LABEL:");
-    translateConditionFor(condition, assemblyCode);
-    translateBody(node["body"], assemblyCode);
-    assemblyCode.push("MOVE elx,elx + 1");
-    assemblyCode.push("JUMP LOOP_FOR_START_LABEL");
-    assemblyCode.push("LOOP_FOR_END_LABEL:");
+    const loopStartLabel = 'WHILE_'+generateLabel();
+    const loopEndLabel = 'WHILE_'+generateLabel();
+
+    assemblyCode.push(`${loopStartLabel}:`);
+
+    translateCondition(condition, loopEndLabel, assemblyCode);
+    translateBody(body, assemblyCode);
+
+    assemblyCode.push(`JUMP ${loopStartLabel}`);
+    assemblyCode.push(`${loopEndLabel}:`);
 }
 
 function translateIfStatement(node, assemblyCode) {
-    let condition = node["condition_if"];
-    translateConditionIf(condition, assemblyCode);
-    translateBody(node["body"], assemblyCode);
-    assemblyCode.push("JUMP END_IF_LABEL");
-    assemblyCode.push("ELSE_LABEL:");
-    if ("else_body" in node) {
-        translateBody(node["else_body"], assemblyCode);
-    }
-    assemblyCode.push("END_IF_LABEL:");
-}
+    const condition = node["children"][0];
+    const body = node["children"][1];
+    const elseBody = node["children"][2];
 
-function getJumpInstruction(operator) {
-    // Map your custom condition to x86 assembly jump instruction
-    let jumpInstruction = {
-        "<": "LESS",
-        ">": "GREATER",
-        "==": "EQUALS",
-        // Add more mappings as needed
-    }[operator];
-    return jumpInstruction;
+    const elseLabel = 'IF_'+generateLabel();
+    const endIfLabel = 'IF_'+generateLabel();
+
+    translateCondition(condition, elseLabel, assemblyCode);
+    translateBody(body, assemblyCode);
+
+    assemblyCode.push(`JUMP ${endIfLabel}`);
+    assemblyCode.push(`${elseLabel}:`);
+
+    if (elseBody) {
+        translateBody(elseBody, assemblyCode);
+    }
+
+    assemblyCode.push(`${endIfLabel}:`);
+}
+function translateCondition(condition, jumpLabel, assemblyCode) {
+
+    let leftOperand = condition["children"][0]["children"][0];
+    if (leftOperand['node']=='constant'){
+        leftOperand=leftOperand['value']
+    }else if(leftOperand['node']=='id'){
+        leftOperand='|'+leftOperand['value']+'|'
+    }
+    const operator = condition["children"][0]["children"][1]['value'];
+    let rightOperand = condition["children"][0]["children"][2];
+    if (rightOperand['node']=='constant'){
+        rightOperand=rightOperand['value']
+    }else if(rightOperand['node']=='id'){
+        rightOperand='|'+leftOperand['value']+'|'
+    }
+
+    assemblyCode.push(`MOV eax ,${leftOperand}\nMOV ebx , ${rightOperand}\nCOMPARE eax , ebx`);
+    assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
+}
+function binopStatement(node, assemblyCode) {
+  
+  if(node["children"][2]["node"]!=="binop"){ //2eme cas de binop simple
+  let smallId = node['children'][0]["value"];
+  let op2 = node["children"][1]["value"];
+  let bop2 = getOperator(op2);
+  let right = node['children'][2];
+  if (right['node']=='constant'){
+    right=right['value']
+  }else if(right['node']=='id'){
+    right='|'+right['value']+'|'
+  }
+  
+  operation(bop2,smallId,right,assemblyCode)
+
+}
+else if (node["children"][2]["node"]=="binop") { //3eme cas de binop imbriqué 
+    let bigId = node['children'][0]['value'];
+    let op2 = node["children"][1]["value"];
+    let bop2 = getOperator(op2);
+    binopStatement(node["children"][2], assemblyCode);
+    const assemblyInstruction = `MOV eax, ebx\nMOV ebx, |${bigId}|\n${bop2} ebx, eax`;
+    assemblyCode.push(assemblyInstruction);
+}else{  //1er cas de recursion du 3eme cas
+    let bigId = node['children'][0]['value'];
+    let op1=node["children"][1]["value"];
+    let bop1 = getOperator(op1);
+    let binNode = node['children'][2];
+    let smallId = binNode['children'][0]["value"];
+    let op2 = binNode["children"][1]["value"];
+    let bop2 = getOperator(op2);
+    let right = binNode['children'][2];
+    if (right["node"]=='binop') {
+        binopStatement(binNode, assemblyCode);
+        operation2(bop1, bigId,assemblyCode);
+  
+  } else if (['constant','id'].includes(right["node"])) {
+    right = right['value'];
+    operation3(bop1,bop2,bigId,smallId,right,assemblyCode);
+    
+  } 
+  }}
+
+
+
+function operation(bop2,smallId,right,assemblyCode){
+    assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
+    assemblyCode.push(assemblyInstruction);
+}
+function operation2(bop,bigId,assemblyCode){
+    assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
+    assemblyCode.push(assemblyInstruction);
+}
+function operation3(bop1,bop2,bigId,smallId,right,assemblyCode){
+    assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
+    assemblyCode.push(assemblyInstruction);
 }
 
 function getOperator(operator) {
-    // Map your custom condition to x86 assembly jump instruction
-    let ops = {
-        "+": "add",
-        "-": "sub",
-        "*": "imul",
-        "/": "idiv",
-        // Add more mappings as needed
-    }[operator];
-    return ops;
+  // Map your custom condition to x86 assembly jump instruction
+  let ops = {
+      "+": "add",
+      "-": "sub",
+      "*": "imul",
+      "/": "idiv",
+      // Add more mappings as needed
+  }[operator];
+  return ops;
+}
+function getJumpInstruction(operator) {
+  // Map your custom condition to x86 assembly jump instruction
+  const jumpInstruction = {
+      "<": "LESS",
+      ">": "GREATER",
+      "==": "EQUALS",
+      "<=": "LESS_OR_EQUAL",
+      ">=": "GREATER_OR_EQUAL",
+      "!=": "NOT_EQUAL",
+      "&&": "AND",
+      "||": "OR",
+      "and": "AND",
+      "or": "OR",
+
+      // Add more mappings as needed
+  }[operator];
+  return jumpInstruction;
 }
 
-function translateConditionIf(node, assemblyCode) {
-    let test = node["test"];
-    let right = node["right"];
-    let operator = node["noeud"];
-    let jumpInstruction = getJumpInstruction(operator);
-    //I should add more i think  
-    assemblyCode.push(`COMPARE ${test}, ${right}`);
-    assemblyCode.push(`JUMP_IF_NOT_${jumpInstruction}   ELSE_LABEL`);
-}
 
-function translateConditionWhile(node, assemblyCode) {
-    let test = node["test"];
-    let right = node["right"];
-    let operator = node["noeud"];
-    let jumpInstruction = getJumpInstruction(operator);
-    //I should add more i think    
-    assemblyCode.push(`COMPARE ${test}, ${right}`);
-    assemblyCode.push(`JUMP_IF_NOT_${jumpInstruction}   LOOP_WHILE_END_LABEL`);
-}
-
-function translateConditionFor(node, assemblyCode) {
-    let left = node["left"];
-    let right = node["right"];
-    let variable = node["variable"];
-    //I should add more i think    
-    assemblyCode.push(`MOVE ${variable}, elx`);
-    assemblyCode.push(`COMPARE ${left}, ${right}`);
-    assemblyCode.push("JUMP_IF_NOT_LESS   LOOP_FOR_END_LABEL");
-}
-
-if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
-    module.exports = {
-        translateProgram,
-        translateBody,
-        translateStatement,
-        translateAssignment,
-        binopStatement,
-        translateWhileLoop,
-        translateForLoop,
-        translateIfStatement,
-        getJumpInstruction,
-        getOperator,
-        translateConditionIf,
-        translateConditionWhile,
-        translateConditionFor
-    };
-}
-
-// Example usage
-const syntaxTree = {
-    "noeud": "body",
-    "body": {
-        "1": {
-            "noeud": "Assignment",
-            "id": "a",
-            "cst": "5"
-        },
-        "2": {
-            "noeud": "while",
-            "condition_while": {
-                "noeud": ">",
-                "test": "x",
-                "right": "5"
-            },
-            "body": {
-                "noeud": "body",
-                "1": {
-                    "noeud": "Assignment",
-                    "id": "y",
-                    "cst": "3"
-                },
-                "2": {
-                    "noeud": "if",
-                    "condition_if": {
-                        "noeud": ">",
-                        "test": "y",
-                        "right": "4"
-                    },
-                    "body": {
-                        "noeud": "body",
-                        "1": {
-                            "noeud": "Assignment",
-                            "id": "z",
-                            "binop": {
-                                "id": "b",
-                                "op": "/",
-                                "binop": {
-                                    "id": "a",
-                                    "op": "*",
-                                    "binop": {
-                                        "id": "c",
-                                        "op": "+",
-                                        "id2": "1"
-                                    }
-                                }
-                            }
-                        },
-                        "2": {
-                            "noeud": "Assignment",
-                            "id": "t",
-                            "binop": {
-                                "id": "z",
-                                "op": "*",
-                                "id2": "m"
-                            }
-                        }
-                    },
-                    "else_body": {
-                        "noeud": "body",
-                        "1": {
-                            "noeud": "Assignment",
-                            "id": "w",
-                            "cst": "10"
-                        }
-                    }
-                }
-            }
-        },
-        "3": {
-            "noeud": "for",
-            "condition_for": {
-                "variable": "i",
-                "left": "5",
-                "right": "10"
-            },
-            "body": {
-                "noeud": "body",
-                "1": {
-                    "noeud": "Assignment",
-                    "id": "t",
-                    "binop": {
-                        "id": "i",
-                        "op": "*",
-                        "cst": "5"
-                    }
-                }
-            }
-        }
-    }
-};
-
-const assemblyCode = [];
-
-translateProgram(syntaxTree, assemblyCode);
-
-for (let line of assemblyCode) {
-    console.log(line);
+function generateLabel() {
+    // Placeholder label generation logic
+    // Customize based on your label naming conventions
+    return `LABEL_${Math.floor(Math.random() * 1000)}`;
 }
