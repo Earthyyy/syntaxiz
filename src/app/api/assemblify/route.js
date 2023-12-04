@@ -8,6 +8,6 @@ export async function POST(req) {
     translateProgram(payload,response)
 
     return NextResponse.json({
-        response
+        response: response.join('\n')
     })
 }
