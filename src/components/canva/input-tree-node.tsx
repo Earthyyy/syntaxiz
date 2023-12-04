@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 import {
   Handle,
   NodeProps,
@@ -25,6 +26,23 @@ export default function InputTreeNode({
 }: NodeProps<NodeData>) {
   const reactFlow = useReactFlow();
   const { setNodes } = reactFlow;
+
+  useEffect(() => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              value: defaultValues[data?.label] ?? "",
+            },
+          };
+        }
+        return node;
+      })
+    );
+  }, []);
 
   const onChange = (event: any) => {
     setNodes((nodes) =>
