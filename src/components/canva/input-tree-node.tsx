@@ -1,12 +1,66 @@
 import { cn } from "@/lib/utils";
-import { Handle, NodeProps, Position } from "reactflow";
+import { useEffect } from "react";
+import {
+  Handle,
+  NodeProps,
+  Position,
+  useReactFlow,
+  useStoreApi,
+} from "reactflow";
 
 type NodeData = {
-  label: string;
+  label: "Id" | "Constant" | "Op";
   type: "root" | "node" | "leaf";
 };
 
-export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
+const defaultValues = {
+  Id: "x",
+  Constant: 50,
+  Op: "+",
+};
+
+export default function InputTreeNode({
+  data,
+  selected,
+  id,
+}: NodeProps<NodeData>) {
+  const reactFlow = useReactFlow();
+  const { setNodes } = reactFlow;
+
+  useEffect(() => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              value: defaultValues[data?.label] ?? "",
+            },
+          };
+        }
+        return node;
+      })
+    );
+  }, []);
+
+  const onChange = (event: any) => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              value: event.target.value,
+            },
+          };
+        }
+        return node;
+      })
+    );
+  };
+
   return (
     <>
       <Handle type="target" position={Position.Top} />
@@ -20,10 +74,11 @@ export default function InputTreeNode({ data, selected }: NodeProps<NodeData>) {
           {data?.label}
         </div>
         <input
-          defaultValue={"50"}
+          defaultValue={defaultValues[data?.label] ?? ""}
           type="text"
           name="value"
           id="value"
+          onChange={onChange}
           className="relative items-center justify-center bg-white p-2 flex rounded-b-2xl text-xs text-center focus:outline-none"
         />
       </div>

@@ -8,6 +8,7 @@ import ReactFlow, {
   OnConnect,
   OnEdgesChange,
   OnNodesChange,
+  OnNodesDelete,
   ReactFlowInstance,
   XYPosition,
   addEdge,
@@ -30,14 +31,8 @@ const initialNodes: Node[] = [
   {
     id: "1",
     type: "simpleTreeNode",
-    data: { label: "body", type: "root" },
+    data: { label: "body", type: "root", value: null },
     position: { x: 0, y: 0 },
-  },
-  {
-    id: "2",
-    type: "inputTreeNode",
-    data: { label: "id", type: "node" },
-    position: { x: 100, y: 100 },
   },
 ];
 
@@ -50,7 +45,7 @@ const generateId = () => {
   return id;
 };
 
-const Canva = () => {
+const Flow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
@@ -67,6 +62,40 @@ const Canva = () => {
       event.dataTransfer.dropEffect = "move";
     },
     []
+  );
+
+  const onNodesDelete: OnNodesDelete = useCallback(
+    (deleted) => {
+      const deletedIds = deleted.map((node) => node.id);
+      const descendantIds: string[] = [];
+
+      function findDescendants(nodeIds: string[]) {
+        // TODO: remove the second filter when you force the tree structure
+        let temp = edges
+          .filter((edge) => nodeIds.includes(edge.source))
+          .map((edge) => edge.target)
+          .filter((nodeId) => !descendantIds.includes(nodeId));
+
+        if (temp.length > 0) {
+          descendantIds.push(...temp);
+          findDescendants(temp);
+        }
+      }
+
+      findDescendants(deletedIds);
+
+      const allIds = [...deletedIds, ...descendantIds];
+
+      const newNodes = nodes.filter((node) => !allIds.includes(node.id));
+
+      const newEdges = edges.filter(
+        (edge) => !allIds.includes(edge.source) && !allIds.includes(edge.target)
+      );
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+    },
+    [nodes, edges]
   );
 
   const onDrop = useCallback(
@@ -91,7 +120,7 @@ const Canva = () => {
         id: getId(),
         type,
         position,
-        data: { label: content },
+        data: { label: content, value: null },
       };
 
       setNodes((nds) => nds.concat(newNode));
@@ -101,14 +130,14 @@ const Canva = () => {
           id: getId(),
           type: "simpleTreeNode",
           position: { x: position.x - 100, y: position.y + 100 },
-          data: { label: "test" },
+          data: { label: "test", value: null },
         };
 
         const bodyNode: Node = {
           id: getId(),
           type: "simpleTreeNode",
           position: { x: position.x + 100, y: position.y + 100 },
-          data: { label: "body" },
+          data: { label: "body", value: null },
         };
 
         setNodes((nds) => nds.concat(testNode));
@@ -142,7 +171,7 @@ const Canva = () => {
             id: getId(),
             type: "simpleTreeNode",
             position: { x: position.x + 300, y: position.y + 100 },
-            data: { label: "orelse" },
+            data: { label: "orelse", value: null },
           };
 
           setNodes((nds) => nds.concat(orelseNode));
@@ -175,6 +204,7 @@ const Canva = () => {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         deleteKeyCode={"Delete"}
+        onNodesDelete={onNodesDelete}
         proOptions={{
           hideAttribution: true,
         }}
@@ -186,4 +216,4 @@ const Canva = () => {
   );
 };
 
-export default Canva;
+export default Flow;
