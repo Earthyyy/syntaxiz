@@ -1,5 +1,5 @@
-module.exports = { translateProgram /* other exported functions */ };
-function translateProgram(tree, assemblyCode) {
+
+export function translateProgram(tree, assemblyCode) {
     translateBody(tree, assemblyCode);
 }
 function translateBody(nodes, assemblyCode) {
