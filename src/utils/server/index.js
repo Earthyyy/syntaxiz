@@ -45,20 +45,24 @@ function assign(id,cst,assemblyCode){
     assemblyCode.push(assemblyInstruction);
 }
 function translateWhileLoop(node, assemblyCode) {
-    const condition = node["children"][0];
-    const body = node["children"][1];
+  const condition = node["children"][0];
+  const body = node["children"][1];
 
-    const loopStartLabel = 'WHILE_'+generateLabel();
-    const loopEndLabel = 'WHILE_'+generateLabel();
+  const loopStartLabel = 'WHILE_' + generateLabel();
+  const loopEndLabel = 'WHILE_' + generateLabel();
 
-    assemblyCode.push(`${loopStartLabel}:`);
+  assemblyCode.push(`${loopStartLabel}:`);
 
+  if (condition["node"] === "test") {
     translateCondition(condition, loopEndLabel, assemblyCode);
-    translateBody(body, assemblyCode);
+  } 
 
-    assemblyCode.push(`JUMP ${loopStartLabel}`);
-    assemblyCode.push(`${loopEndLabel}:`);
+  translateBody(body, assemblyCode);
+
+  assemblyCode.push(`JUMP ${loopStartLabel}`);
+  assemblyCode.push(`${loopEndLabel}:`);
 }
+
 
 function translateIfStatement(node, assemblyCode) {
     const condition = node["children"][0];
@@ -81,24 +85,30 @@ function translateIfStatement(node, assemblyCode) {
     assemblyCode.push(`${endIfLabel}:`);
 }
 function translateCondition(condition, jumpLabel, assemblyCode) {
+  if (condition["children"][0]["node"]=='compare'){
+      let comparenode=condition["children"][0];
+      let leftOperand = comparenode["children"][0];
+      if (leftOperand['node'] == 'constant') {
+          leftOperand = leftOperand['value'];
+      } else if (leftOperand['node'] == 'id') {
+          leftOperand = '|' + leftOperand['value'] + '|';
+      }
 
-    let leftOperand = condition["children"][0]["children"][0];
-    if (leftOperand['node']=='constant'){
-        leftOperand=leftOperand['value']
-    }else if(leftOperand['node']=='id'){
-        leftOperand='|'+leftOperand['value']+'|'
-    }
-    const operator = condition["children"][0]["children"][1]['value'];
-    let rightOperand = condition["children"][0]["children"][2];
-    if (rightOperand['node']=='constant'){
-        rightOperand=rightOperand['value']
-    }else if(rightOperand['node']=='id'){
-        rightOperand='|'+leftOperand['value']+'|'
-    }
+      const operator = comparenode["children"][1]['value'];
 
-    assemblyCode.push(`MOV eax ,${leftOperand}\nMOV ebx , ${rightOperand}\nCOMPARE eax , ebx`);
-    assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
+      let rightOperand = comparenode["children"][2];
+      if (rightOperand['node'] == 'constant') {
+          rightOperand = rightOperand['value'];
+      } else if (rightOperand['node'] == 'id') {
+          rightOperand = '|' + rightOperand['value'] + '|';
+      }
+
+      assemblyCode.push(`MOV eax, ${leftOperand}\nMOV ebx, ${rightOperand}\nCMP eax, ebx`);
+      assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
+  
+  }
 }
+
 function binopStatement(node, assemblyCode) {
   
   if(node["children"][2]["node"]!=="binop"){ //2eme cas de binop simple
