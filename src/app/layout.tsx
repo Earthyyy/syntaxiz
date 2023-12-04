@@ -4,8 +4,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/header/navbar";
 import { ReactFlowProvider } from "reactflow";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const inter = Inter({ subsets: ["latin"] });
+
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -19,8 +22,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col">
         <ReactFlowProvider>
-          <Navbar />
-          {children}
+          <QueryClientProvider client={queryClient}>
+            <Navbar />
+            {children}
+          </QueryClientProvider>
         </ReactFlowProvider>
       </body>
     </html>
