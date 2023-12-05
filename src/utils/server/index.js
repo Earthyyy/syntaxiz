@@ -1,5 +1,10 @@
 
-export function translateProgram(tree, assemblyCode) {
+module.exports = {
+    translateProgram,
+    translateBody,
+    translateStatement,
+};
+function translateProgram(tree, assemblyCode) {
     translateBody(tree, assemblyCode);
 }
 function translateBody(nodes, assemblyCode) {
@@ -121,8 +126,8 @@ function binopStatement(node, assemblyCode) {
   }else if(right['node']=='id'){
     right='|'+right['value']+'|'
   }
-  
-  operation(bop2,smallId,right,assemblyCode)
+  assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
+  assemblyCode.push(assemblyInstruction);
 
 }
 else if (node["children"][2]["node"]=="binop") { //3eme cas de binop imbriqué 
@@ -143,30 +148,16 @@ else if (node["children"][2]["node"]=="binop") { //3eme cas de binop imbriqué
     let right = binNode['children'][2];
     if (right["node"]=='binop') {
         binopStatement(binNode, assemblyCode);
-        operation2(bop1, bigId,assemblyCode);
+        assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
+        assemblyCode.push(assemblyInstruction);
   
   } else if (['constant','id'].includes(right["node"])) {
     right = right['value'];
-    operation3(bop1,bop2,bigId,smallId,right,assemblyCode);
+    assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
+    assemblyCode.push(assemblyInstruction);
     
   } 
   }}
-
-
-
-function operation(bop2,smallId,right,assemblyCode){
-    assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
-    assemblyCode.push(assemblyInstruction);
-}
-function operation2(bop,bigId,assemblyCode){
-    assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
-    assemblyCode.push(assemblyInstruction);
-}
-function operation3(bop1,bop2,bigId,smallId,right,assemblyCode){
-    assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
-    assemblyCode.push(assemblyInstruction);
-}
-
 function getOperator(operator) {
   // Map your custom condition to x86 assembly jump instruction
   let ops = {
@@ -199,7 +190,11 @@ function getJumpInstruction(operator) {
 
 
 function generateLabel() {
-    // Placeholder label generation logic
-    // Customize based on your label naming conventions
-    return `LABEL_${Math.floor(Math.random() * 1000)}`;
-}
+    if (!generateLabel.counter) {
+      generateLabel.counter = 1;
+    } else {
+      generateLabel.counter++;
+    }
+  
+    return `LABEL_${generateLabel.counter}`;
+  }
