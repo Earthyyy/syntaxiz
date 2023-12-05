@@ -9,9 +9,7 @@ const Output = () => {
         <h2 className="text-2xl font-semibold">Output</h2>
       </header>
       <ScrollArea className="rounded-sm flex-1 p-4 bg-zinc-950">
-        <pre className="text-xs text-white p-2">
-          {JSON.stringify(data?.response, null, 2)}
-        </pre>
+        <pre className="text-xs text-white p-2">{data?.response}</pre>
       </ScrollArea>
     </div>
   );
