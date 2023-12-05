@@ -12,6 +12,7 @@ import { useCallback } from "react";
 import { type Node } from "reactflow";
 import { useMutation } from "react-query";
 import axios from "axios";
+import useDataStore from "@/hooks/use-data-store";
 
 type NodeData = {
   label: string;
@@ -21,6 +22,7 @@ type NodeData = {
 
 const Navbar = () => {
   const store = useReactFlow();
+  const updateData = useDataStore((state) => state.updateData);
   const { getNodes, getEdges } = store;
 
   const { mutate: assemblify } = useMutation({
@@ -54,7 +56,7 @@ const Navbar = () => {
       return data;
     },
     onSuccess: (data) => {
-      console.log(data);
+      updateData(data);
     },
   });
 
