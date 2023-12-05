@@ -67,8 +67,6 @@ function translateWhileLoop(node, assemblyCode) {
   assemblyCode.push(`JUMP ${loopStartLabel}`);
   assemblyCode.push(`${loopEndLabel}:`);
 }
-
-
 function translateIfStatement(node, assemblyCode) {
     const condition = node["children"][0];
     const body = node["children"][1];
