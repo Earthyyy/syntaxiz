@@ -7,12 +7,13 @@ import {
   useStoreApi,
 } from "reactflow";
 import { Button } from "../ui/button";
-import { Play, ListTree, Leaf } from "lucide-react";
+import { Play, ListTree, Leaf, Loader2 } from "lucide-react";
 import { useCallback } from "react";
 import { type Node } from "reactflow";
 import { useMutation } from "react-query";
 import axios from "axios";
 import useDataStore from "@/hooks/use-data-store";
+import { cn } from "@/lib/utils";
 
 type NodeData = {
   label: string;
@@ -25,7 +26,7 @@ const Navbar = () => {
   const updateData = useDataStore((state) => state.updateData);
   const { getNodes, getEdges } = store;
 
-  const { mutate: assemblify } = useMutation({
+  const { mutate: assemblify, isLoading } = useMutation({
     mutationKey: "assemblify",
     mutationFn: async () => {
       const visited = new Set();
@@ -67,8 +68,16 @@ const Navbar = () => {
           <Leaf className="w-7 h-7 mr-1 text-[#306844]" />
           <span className="text-2xl font-normal">syntaxiz</span>
         </a>
-        <Button className="" onClick={() => assemblify()}>
-          <Play className="w-4 h-4 mr-2" />
+        <Button className="" onClick={() => assemblify()} disabled={isLoading}>
+          <Play
+            className={cn("w-4 h-4 mr-2", isLoading ? "hidden" : "block")}
+          />
+          <Loader2
+            className={cn(
+              "w-4 h-4 mr-2 animate-spin",
+              isLoading ? "block" : "hidden"
+            )}
+          />
           Generate Code
         </Button>
       </div>
