@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useDataStore from "@/hooks/use-data-store";
+import ClipBoardButton from "@/components/ui/clipboard-button";
 
 const Output = () => {
   const data = useDataStore((state) => state.data);
@@ -9,6 +10,7 @@ const Output = () => {
         <h2 className="text-2xl font-semibold">Output</h2>
       </header>
       <ScrollArea className="rounded-sm flex-1 p-4 bg-zinc-950">
+        <ClipBoardButton output={data?.response} />
         <pre className="text-xs text-white p-2">{data?.response}</pre>
       </ScrollArea>
     </div>
