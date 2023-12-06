@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
+  ControlButton,
   Controls,
   Edge,
   Node,
@@ -22,6 +23,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import SimpleTreeNode from "./simple-tree-node";
 import InputTreeNode from "./input-tree-node";
+import { ResetIcon } from "@radix-ui/react-icons";
 
 const nodeTypes = {
   simpleTreeNode: SimpleTreeNode,
@@ -212,7 +214,16 @@ const Flow = () => {
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Controls />
+        <Controls>
+          <ControlButton
+            onClick={() => {
+              setNodes(initialNodes);
+              setEdges(initialEdges);
+            }}
+          >
+            <ResetIcon className="text-red-600 w-10 h-10" />
+          </ControlButton>
+        </Controls>
       </ReactFlow>
     </div>
   );
