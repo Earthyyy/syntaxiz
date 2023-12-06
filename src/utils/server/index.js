@@ -1,8 +1,7 @@
 
 module.exports = {
     translateProgram,
-    translateBody,
-    translateStatement,
+
 };
 function translateProgram(tree, assemblyCode) {
     translateBody(tree, assemblyCode);
@@ -124,7 +123,7 @@ function binopStatement(node, assemblyCode) {
   }else if(right['node']=='id'){
     right='|'+right['value']+'|'
   }
-  assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
+  const assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
   assemblyCode.push(assemblyInstruction);
 
 }
@@ -146,12 +145,12 @@ else if (node["children"][2]["node"]=="binop") { //3eme cas de binop imbriqué
     let right = binNode['children'][2];
     if (right["node"]=='binop') {
         binopStatement(binNode, assemblyCode);
-        assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
+        const assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
         assemblyCode.push(assemblyInstruction);
   
   } else if (['constant','id'].includes(right["node"])) {
     right = right['value'];
-    assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
+    const assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
     assemblyCode.push(assemblyInstruction);
     
   } 
