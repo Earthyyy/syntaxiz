@@ -3,6 +3,7 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Connection,
+  Controls,
   Edge,
   Node,
   OnConnect,
@@ -211,6 +212,7 @@ const Flow = () => {
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+        <Controls />
       </ReactFlow>
     </div>
   );
