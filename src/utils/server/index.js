@@ -35,7 +35,8 @@ function translateAssignment(node, assemblyCode) {
 
     if (valueNode["node"] === "constant") {
         const rightOperand = valueNode["value"];
-        assign(id,rightOperand,assemblyCode);
+        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV |${id}|, eax`;
+        assemblyCode.push(assemblyInstruction);
     } else if (valueNode["node"] === "binop") {
         binopStatement(valueNode, assemblyCode);
         let bigId = getnode(node['children'],'id')["value"];
@@ -43,7 +44,8 @@ function translateAssignment(node, assemblyCode) {
         assemblyCode.push(assemblyInstruction);
     }else if (valueNode["node"] === "id") {
         const rightOperand = '|'+valueNode["value"]+'|';
-        assign(id,rightOperand,assemblyCode);
+        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV |${id}|, eax`;
+        assemblyCode.push(assemblyInstruction);
 }}
 function getnode(children,id){
   for (let node of children){
@@ -53,10 +55,6 @@ function getnode(children,id){
 
 }
 
-function assign(id,cst,assemblyCode){
-    const assemblyInstruction = `MOV eax, ${cst}\nMOV |${id}|, eax`;
-    assemblyCode.push(assemblyInstruction);
-}
 function translateWhileLoop(node, assemblyCode) {
   const condition = node["children"][0];
   const body = node["children"][1];
