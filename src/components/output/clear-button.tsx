@@ -5,10 +5,10 @@ import { Trash, X } from "lucide-react";
 import useDataStore from "@/hooks/use-data-store";
 
 const ClearButton = () => {
-  const updateData = useDataStore((state) => state.updateData);
+  const resetData = useDataStore((state) => state.resetData);
 
   return (
-    <Button variant={"ghost"} size={"icon"} onClick={() => updateData("")}>
+    <Button variant={"ghost"} size={"icon"} onClick={resetData}>
       <Trash className="w-4 h-4 text-red-600" />
     </Button>
   );
