@@ -9,9 +9,9 @@ const Output = () => {
       <header>
         <h2 className="text-2xl font-semibold">Output</h2>
       </header>
-      <ScrollArea className="rounded-sm flex-1 p-4 bg-zinc-950">
+      <ScrollArea className="rounded-sm flex-1 p-4 bg-zinc-950 overflow-auto">
         <ClipBoardButton output={data?.response} />
-        <pre className="text-xs text-white p-2">{data?.response}</pre>
+        <pre className="text-xs text-white p-2 max-h-96">{data?.response}</pre>
       </ScrollArea>
     </div>
   );
