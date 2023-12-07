@@ -66,11 +66,11 @@ export default function InputTreeNode({
       <Handle type="target" position={Position.Top} />
       <div
         className={cn(
-          "flex flex-col  border border-solid border-gray-200 rounded-2xl shadow-sm w-[148px]",
-          selected && "border-black border-2"
+          "flex flex-col border border-solid border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm w-[148px]",
+          selected && "border-black dark:border-gray-200 border-2"
         )}
       >
-        <div className="font-mono font-bold p-1 border-b border-solid bg-[#FAFAFE] text-center rounded-t-2xl">
+        <div className="font-mono font-bold p-1 border-b border-solid bg-[#FAFAFE] dark:bg-[#09090b]  text-center rounded-t-2xl">
           {data?.label}
         </div>
         <input
@@ -79,7 +79,7 @@ export default function InputTreeNode({
           name="value"
           id="value"
           onChange={onChange}
-          className="relative items-center justify-center bg-white p-2 flex rounded-b-2xl text-xs text-center focus:outline-none"
+          className="relative items-center justify-center bg-white p-2 flex rounded-b-2xl text-xs text-center focus:outline-none dark:bg-black"
         />
       </div>
     </>

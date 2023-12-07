@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/header/navbar";
 import { ReactFlowProvider } from "reactflow";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +24,15 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col">
         <ReactFlowProvider>
           <QueryClientProvider client={queryClient}>
-            <Navbar />
-            {children}
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+              <Navbar />
+              {children}
+            </ThemeProvider>
           </QueryClientProvider>
         </ReactFlowProvider>
       </body>
