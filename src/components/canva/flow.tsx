@@ -23,7 +23,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import SimpleTreeNode from "./simple-tree-node";
 import InputTreeNode from "./input-tree-node";
-import { ResetIcon } from "@radix-ui/react-icons";
+import { RotateCcw } from "lucide-react";
 
 const nodeTypes = {
   simpleTreeNode: SimpleTreeNode,
@@ -221,7 +221,8 @@ const Flow = () => {
               setEdges(initialEdges);
             }}
           >
-            <ResetIcon className="text-red-600 w-10 h-10" />
+            {/* <ResetIcon className="text-red-600 w-10 h-10" /> */}
+            <RotateCcw className="text-red-600 w-8 h-8 font-bold" />
           </ControlButton>
         </Controls>
       </ReactFlow>
