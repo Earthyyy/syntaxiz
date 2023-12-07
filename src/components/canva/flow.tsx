@@ -24,6 +24,7 @@ import "reactflow/dist/style.css";
 import SimpleTreeNode from "./simple-tree-node";
 import InputTreeNode from "./input-tree-node";
 import { RotateCcw } from "lucide-react";
+import useDataStore from "@/hooks/use-data-store";
 
 const nodeTypes = {
   simpleTreeNode: SimpleTreeNode,
@@ -53,6 +54,7 @@ const Flow = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
+  const resetData = useDataStore((state) => state.resetData);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
@@ -224,9 +226,9 @@ const Flow = () => {
             onClick={() => {
               setNodes(initialNodes);
               setEdges(initialEdges);
+              resetData();
             }}
           >
-            {/* <ResetIcon className="text-red-600 w-10 h-10" /> */}
             <RotateCcw className="text-red-600 w-8 h-8 font-bold" />
           </ControlButton>
         </Controls>
