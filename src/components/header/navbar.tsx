@@ -93,7 +93,8 @@ const Navbar = () => {
             target="_blank"
             className={buttonVariants({
               variant: "ghost",
-              className: "rounded-[.5rem] w-8 h-8 relative px-0 py-0",
+              size: "icon",
+              className: "w-8 h-8",
             })}
           >
             <GitHubLogoIcon className="w-4 h-4" />
