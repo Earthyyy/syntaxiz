@@ -1,18 +1,17 @@
 import { create } from "zustand";
 
 type State = {
-  data: string;
+  data: any;
 };
 
 type Action = {
-  updateData: (data: string) => void;
-  resetData: () => void;
+  updateData: (data: any) => void;
 };
 
 const useDataStore = create<State & Action>((set) => ({
-  data: "",
+  data: {},
   updateData: (data) => set({ data }),
-  resetData: () => set({ data: "" }),
+  resetData: () => set({ data: {} }),
 }));
 
 export default useDataStore;
