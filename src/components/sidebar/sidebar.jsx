@@ -22,7 +22,7 @@ const Sidebar = () => {
     >
       <Accordion type="multiple" collapsible="true">
         <AccordionItem value="operations">
-          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-gray-300 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
+          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-white dark:text-gray-400 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
             Operations
           </AccordionTrigger>
           <AccordionContent>
@@ -35,7 +35,7 @@ const Sidebar = () => {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="flow-control">
-          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-gray-300 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
+          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-white dark:text-gray-400 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
             Flow Control
           </AccordionTrigger>
           <AccordionContent>
@@ -46,7 +46,7 @@ const Sidebar = () => {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="terminal-units">
-          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-gray-300 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
+          <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-white dark:text-gray-400 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
             Terminal Units
           </AccordionTrigger>
           <AccordionContent>

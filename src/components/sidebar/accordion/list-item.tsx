@@ -9,7 +9,7 @@ interface ListItemProps {
 const ListItem: FC<ListItemProps> = ({ content, handler, leaf }) => {
   return (
     <li
-      className="h-[33px] hover:bg-accordion-hover dark:hover:bg-[#212225] rounded px-2 py-2 cursor-grab text-accordion hover:text-accordion-foreground dark:hover:text-gray-300"
+      className="h-[33px] hover:bg-accordion-hover dark:hover:bg-[#212225] rounded px-2 py-2 cursor-grab text-accordion hover:text-accordion-foreground dark:hover:text-white dark:text-gray-400"
       draggable
       onDragStart={(event) =>
         handler(event, leaf ? "inputTreeNode" : "simpleTreeNode", content)
