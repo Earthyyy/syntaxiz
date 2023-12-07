@@ -29,21 +29,30 @@ function translateStatement(node, assemblyCode) {
   }
 }
 function translateAssignment(node, assemblyCode) {
-    const id = node["children"][0]["value"];
-    const valueNode = node["children"][1];
+    const idIndex = node["children"][0].node === "id" ? 0 : 1;
+    const id = getnode(node['children'],'id')["value"];
+    const valueNode = node["children"][1-idIndex]
 
     if (valueNode["node"] === "constant") {
         const rightOperand = valueNode["value"];
         assign(id,rightOperand,assemblyCode);
     } else if (valueNode["node"] === "binop") {
         binopStatement(valueNode, assemblyCode);
-        let bigId = node['children'][0]['value'];
+        let bigId = getnode(node['children'],'id')["value"];
         const assemblyInstruction = `MOV |${bigId}|, ebx`;
         assemblyCode.push(assemblyInstruction);
     }else if (valueNode["node"] === "id") {
         const rightOperand = '|'+valueNode["value"]+'|';
         assign(id,rightOperand,assemblyCode);
 }}
+function getnode(children,id){
+  for (let node of children){
+    if (node['node']==id){
+      return node;
+  }}
+
+}
+
 function assign(id,cst,assemblyCode){
     const assemblyInstruction = `MOV eax, ${cst}\nMOV |${id}|, eax`;
     assemblyCode.push(assemblyInstruction);
@@ -52,8 +61,8 @@ function translateWhileLoop(node, assemblyCode) {
   const condition = node["children"][0];
   const body = node["children"][1];
 
-  const loopStartLabel = 'WHILE_' + generateLabel();
-  const loopEndLabel = 'WHILE_' + generateLabel();
+  const loopStartLabel = 'START_WHILE_' + generateLabel();
+  const loopEndLabel = 'END_WHILE_' + generateLabel();
 
   assemblyCode.push(`${loopStartLabel}:`);
 
@@ -67,12 +76,12 @@ function translateWhileLoop(node, assemblyCode) {
   assemblyCode.push(`${loopEndLabel}:`);
 }
 function translateIfStatement(node, assemblyCode) {
-    const condition = node["children"][0];
+    const condition =  getnode(node['children'],'test');
     const body = node["children"][1];
     const elseBody = node["children"][2];
 
-    const elseLabel = 'IF_'+generateLabel();
-    const endIfLabel = 'IF_'+generateLabel();
+    const elseLabel = 'ELSE_'+generateLabel();
+    const endIfLabel = 'END_IF_'+generateLabel();
 
     translateCondition(condition, elseLabel, assemblyCode);
     translateBody(body, assemblyCode);
@@ -87,7 +96,6 @@ function translateIfStatement(node, assemblyCode) {
     assemblyCode.push(`${endIfLabel}:`);
 }
 function translateCondition(condition, jumpLabel, assemblyCode) {
-  if (condition["children"][0]["node"]=='compare'){
       let comparenode=condition["children"][0];
       let leftOperand = comparenode["children"][0];
       if (leftOperand['node'] == 'constant') {
@@ -96,65 +104,57 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
           leftOperand = '|' + leftOperand['value'] + '|';
       }
 
-      const operator = comparenode["children"][1]['value'];
-
+      const operator =getnode(comparenode["children"],'op')['value'];
       let rightOperand = comparenode["children"][2];
       if (rightOperand['node'] == 'constant') {
-          rightOperand = rightOperand['value'];
+          assemblyCode.push(`MOV ebx, ${rightOperand['value']}`);
       } else if (rightOperand['node'] == 'id') {
-          rightOperand = '|' + rightOperand['value'] + '|';
+          assemblyCode.push(`MOV ebx, |${rightOperand['value']}|`);
+      }else if (rightOperand['node']=='binop'){
+        binopStatement(rightOperand,assemblyCode)
       }
-
-      assemblyCode.push(`MOV eax, ${leftOperand}\nMOV ebx, ${rightOperand}\nCMP eax, ebx`);
+      assemblyCode.push(`MOV eax, ${leftOperand}`);
+      assemblyCode.push(`CMP eax, ebx`);
       assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
+      
   
   }
-}
-
 function binopStatement(node, assemblyCode) {
   
-  if(node["children"][2]["node"]!=="binop"){ //2eme cas de binop simple
-  let smallId = node['children'][0]["value"];
-  let op2 = node["children"][1]["value"];
+  if(node["children"][0]["node"]!=="binop" && node["children"][1]["node"]!=="binop" && node["children"][2]["node"]!=="binop"){ //1er cas de binop simple
+  let op2 = getnode(node['children'],'op')["value"];
   let bop2 = getOperator(op2);
-  let right = node['children'][2];
+  let filtred=node['children'].filter(item => item['node'] !== 'op');
+  let smallId = filtred[0];
+  if (smallId['node']=='constant'){
+    smallId=smallId['value']
+  }else if(smallId['node']=='id'){
+    smallId='|'+smallId['value']+'|'
+  }
+  let right = filtred[1]; 
   if (right['node']=='constant'){
     right=right['value']
   }else if(right['node']=='id'){
     right='|'+right['value']+'|'
   }
-  const assemblyInstruction=`MOV ebx, |${smallId}|\nMOV eax, ${right}\n${bop2} ebx, eax`;
+  const assemblyInstruction=`MOV ebx, ${smallId}\nMOV eax, ${right}\n${bop2} ebx, eax`;
   assemblyCode.push(assemblyInstruction);
 
 }
-else if (node["children"][2]["node"]=="binop") { //3eme cas de binop imbriqué 
-    let bigId = node['children'][0]['value'];
-    let op2 = node["children"][1]["value"];
-    let bop2 = getOperator(op2);
-    binopStatement(node["children"][2], assemblyCode);
-    const assemblyInstruction = `MOV eax, ebx\nMOV ebx, |${bigId}|\n${bop2} ebx, eax`;
+else  { //2eme cas de binop imbriqué 
+  let op2 = getnode(node['children'],'op')["value"];
+  let bop2 = getOperator(op2);
+  let filtred=node['children'].filter(item => item['node'] !== 'op'&&item['node'] !== 'binop');
+  if (filtred[0]['node']=='id'){
+  var bigId= '|'+filtred[0]['value']+'|'
+}else if (filtred[0]['node']=='constant'){
+  var bigId=  filtred[0]['value'];
+}
+  let binode=getnode(node['children'],'binop');
+    binopStatement(binode, assemblyCode);
+    const assemblyInstruction = `MOV eax, ebx\nMOV ebx, ${bigId}\n${bop2} ebx, eax`;
     assemblyCode.push(assemblyInstruction);
-}else{  //1er cas de recursion du 3eme cas
-    let bigId = node['children'][0]['value'];
-    let op1=node["children"][1]["value"];
-    let bop1 = getOperator(op1);
-    let binNode = node['children'][2];
-    let smallId = binNode['children'][0]["value"];
-    let op2 = binNode["children"][1]["value"];
-    let bop2 = getOperator(op2);
-    let right = binNode['children'][2];
-    if (right["node"]=='binop') {
-        binopStatement(binNode, assemblyCode);
-        const assemblyInstruction=`MOV eax, ebx \nMov ebx, |${bigId}|\n${bop} ebx, eax `;
-        assemblyCode.push(assemblyInstruction);
-  
-  } else if (['constant','id'].includes(right["node"])) {
-    right = right['value'];
-    const assemblyInstruction=`MOV eax, |${smallId}|\nMOV ebx, |${right}|\n${bop2} eax, ebx\nMOV ebx,|${bigId}|\n${bop1} ebx, eax `;
-    assemblyCode.push(assemblyInstruction);
-    
-  } 
-  }}
+}}
 function getOperator(operator) {
   // Map your custom condition to x86 assembly jump instruction
   let ops = {
