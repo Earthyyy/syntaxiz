@@ -66,7 +66,7 @@ export default function InputTreeNode({
       <Handle type="target" position={Position.Top} />
       <div
         className={cn(
-          "flex flex-col border border-solid border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm w-[148px]",
+          "flex flex-col border border-solid border-gray-200 dark:border-gray-700 rounded-lg shadow-sm w-[148px]",
           selected && "border-black dark:border-gray-200 border-2"
         )}
       >
