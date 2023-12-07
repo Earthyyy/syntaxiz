@@ -214,7 +214,12 @@ const Flow = () => {
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-        <Controls>
+        <Controls
+          className="bg-gray-700 text-white"
+          style={{
+            background: "#1f1f1f",
+          }}
+        >
           <ControlButton
             onClick={() => {
               setNodes(initialNodes);

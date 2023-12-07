@@ -14,6 +14,7 @@ import { useMutation } from "react-query";
 import axios from "axios";
 import useDataStore from "@/hooks/use-data-store";
 import { cn } from "@/lib/utils";
+import { ModeToggle } from "../ui/mode-toggle";
 
 type NodeData = {
   label: string;
@@ -68,18 +69,26 @@ const Navbar = () => {
           <Leaf className="w-7 h-7 mr-1 text-[#306844]" />
           <span className="text-2xl font-normal">syntaxiz</span>
         </a>
-        <Button className="" onClick={() => assemblify()} disabled={isLoading}>
-          <Play
-            className={cn("w-4 h-4 mr-2", isLoading ? "hidden" : "block")}
-          />
-          <Loader2
-            className={cn(
-              "w-4 h-4 mr-2 animate-spin",
-              isLoading ? "block" : "hidden"
-            )}
-          />
-          Generate Code
-        </Button>
+
+        <div className="flex gap-2">
+          <Button
+            className=""
+            onClick={() => assemblify()}
+            disabled={isLoading}
+          >
+            <Play
+              className={cn("w-4 h-4 mr-2", isLoading ? "hidden" : "block")}
+            />
+            <Loader2
+              className={cn(
+                "w-4 h-4 mr-2 animate-spin",
+                isLoading ? "block" : "hidden"
+              )}
+            />
+            Generate Code
+          </Button>
+          <ModeToggle />
+        </div>
       </div>
     </nav>
   );

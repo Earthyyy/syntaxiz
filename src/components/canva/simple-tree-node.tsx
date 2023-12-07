@@ -17,8 +17,8 @@ export default function SimpleTreeNode({
       )}
       <div
         className={cn(
-          "flex flex-col  items-center justify-center font-mono font-bold border border-solid border-gray-200 rounded-2xl bg-[#FAFAFE]  shadow-sm w-[148px] min-h-[2.25rem]",
-          selected && "border-black border-2"
+          "flex flex-col  items-center justify-center font-mono font-bold border border-solid border-gray-200 dark:border-gray-700 rounded-2xl dark:bg-[#09090b] bg-[#FAFAFE]  shadow-sm w-[148px] min-h-[2.25rem]",
+          selected && "border-black dark:border-gray-200 border-2"
         )}
       >
         {data?.label}
