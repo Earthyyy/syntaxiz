@@ -304,7 +304,7 @@ const Flow = () => {
               onLayout();
             }}
           >
-            <Network className="w-8 h-8 font-bold" />
+            <Network className="dark:text-white text-black w-8 h-8 font-bold" />
           </ControlButton>
           <ControlButton
             onClick={() => {
