@@ -2,22 +2,17 @@ import React, { useCallback, useState } from "react";
 import ReactFlow, {
   Background,
   BackgroundVariant,
-  Connection,
   ControlButton,
   Controls,
   Edge,
   IsValidConnection,
   Node,
   OnConnect,
-  OnEdgesChange,
-  OnNodesChange,
   OnNodesDelete,
+  Position,
   ReactFlowInstance,
   XYPosition,
   addEdge,
-  applyEdgeChanges,
-  applyNodeChanges,
-  getIncomers,
   getOutgoers,
   useEdgesState,
   useNodesState,
@@ -27,9 +22,10 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import SimpleTreeNode from "./simple-tree-node";
 import InputTreeNode from "./input-tree-node";
-import { RotateCcw } from "lucide-react";
+import { Network, RotateCcw } from "lucide-react";
 import useDataStore from "@/hooks/use-data-store";
 import { restrictChildren } from "@/utils/client";
+import dagre from "@dagrejs/dagre";
 
 const nodeTypes = {
   simpleTreeNode: SimpleTreeNode,
@@ -54,6 +50,46 @@ const generateId = () => {
   return id;
 };
 
+// Dagre Layout
+
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 148;
+const nodeHeight = 36;
+
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+  dagreGraph.setGraph({ rankdir: "TB" });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: node.width!, height: node.height! });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  nodes.forEach((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+
+    // @ts-expect-error
+    node.targetPosition = "top";
+    // @ts-expect-error
+    node.sourcePosition = "bottom";
+
+    node.position = {
+      x: nodeWithPosition.x - nodeWidth / 2,
+      y: nodeWithPosition.y - nodeHeight / 2,
+    };
+
+    return node;
+  });
+
+  return { nodes, edges };
+};
+
 const Flow = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
@@ -61,6 +97,16 @@ const Flow = () => {
     useState<ReactFlowInstance | null>(null);
   const { getNodes, getEdges } = useReactFlow();
   const resetData = useDataStore((state) => state.resetData);
+
+  const onLayout = useCallback(() => {
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      nodes,
+      edges
+    );
+
+    setNodes([...layoutedNodes]);
+    setEdges([...layoutedEdges]);
+  }, [nodes, edges]);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
@@ -253,6 +299,13 @@ const Flow = () => {
             background: "#1f1f1f",
           }}
         >
+          <ControlButton
+            onClick={() => {
+              onLayout();
+            }}
+          >
+            <Network className="w-8 h-8 font-bold" />
+          </ControlButton>
           <ControlButton
             onClick={() => {
               setNodes(initialNodes);
