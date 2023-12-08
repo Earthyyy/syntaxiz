@@ -6,6 +6,7 @@ type State = {
 
 type Action = {
   updateData: (data: any) => void;
+  resetData: () => void;
 };
 
 const useDataStore = create<State & Action>((set) => ({
