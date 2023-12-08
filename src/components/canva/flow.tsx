@@ -29,6 +29,7 @@ import SimpleTreeNode from "./simple-tree-node";
 import InputTreeNode from "./input-tree-node";
 import { RotateCcw } from "lucide-react";
 import useDataStore from "@/hooks/use-data-store";
+import { restrictChildren } from "@/utils/client";
 
 const nodeTypes = {
   simpleTreeNode: SimpleTreeNode,
@@ -208,9 +209,20 @@ const Flow = () => {
       const edges = getEdges();
 
       const target = nodes.find((node) => node.id === connection.target);
+      const source = nodes.find((node) => node.id === connection.source)!;
       const hasParent = edges.some((edge) => edge.target === target?.id);
 
-      return !hasParent;
+      return (
+        !hasParent &&
+        restrictChildren(
+          {
+            getOutgoers,
+            nodes,
+            edges,
+          },
+          source
+        )
+      );
     },
     [getNodes, getEdges]
   );
