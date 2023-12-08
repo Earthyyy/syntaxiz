@@ -6,6 +6,7 @@ import ReactFlow, {
   ControlButton,
   Controls,
   Edge,
+  IsValidConnection,
   Node,
   OnConnect,
   OnEdgesChange,
@@ -16,8 +17,11 @@ import ReactFlow, {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  getIncomers,
+  getOutgoers,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
 
 import "reactflow/dist/style.css";
@@ -54,6 +58,7 @@ const Flow = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
   const [reactFlowInstance, setReactFlowInstance] =
     useState<ReactFlowInstance | null>(null);
+  const { getNodes, getEdges } = useReactFlow();
   const resetData = useDataStore((state) => state.resetData);
 
   const onConnect: OnConnect = useCallback(
@@ -196,6 +201,19 @@ const Flow = () => {
     },
     [reactFlowInstance, setEdges, setNodes]
   );
+
+  const isValidConnection: IsValidConnection = useCallback(
+    (connection) => {
+      const nodes = getNodes();
+      const edges = getEdges();
+
+      const target = nodes.find((node) => node.id === connection.target);
+      const hasParent = edges.some((edge) => edge.target === target?.id);
+
+      return !hasParent;
+    },
+    [getNodes, getEdges]
+  );
   return (
     <div className="flex-1 border-l">
       <ReactFlow
@@ -209,6 +227,7 @@ const Flow = () => {
         onDragOver={onDragOver}
         nodeTypes={nodeTypes}
         deleteKeyCode={"Delete"}
+        isValidConnection={isValidConnection}
         onNodesDelete={onNodesDelete}
         proOptions={{
           hideAttribution: true,
