@@ -118,8 +118,17 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
   
   }
 function binopStatement(node, assemblyCode) {
-  
-  if(node["children"][0]["node"]!=="binop" && node["children"][1]["node"]!=="binop" && node["children"][2]["node"]!=="binop"){ //1er cas de binop simple
+  var binop_counter=0;
+  for (let subnode of node['children'] ){
+    // console.log(counter['node'])
+    if (subnode['node']=='binop'){
+      binop_counter++;
+
+    }
+    
+  }
+
+  if(binop_counter==0){ //1er cas de binop simple
   let op2 = getnode(node['children'],'op')["value"];
   let bop2 = getOperator(op2);
   let filtred=node['children'].filter(item => item['node'] !== 'op');
@@ -139,7 +148,7 @@ function binopStatement(node, assemblyCode) {
   assemblyCode.push(assemblyInstruction);
 
 }
-else  { //2eme cas de binop imbriqué 
+else if(binop_counter==1)  { //2eme cas de binop imbriqué 
   let op2 = getnode(node['children'],'op')["value"];
   let bop2 = getOperator(op2);
   let filtred=node['children'].filter(item => item['node'] !== 'op'&&item['node'] !== 'binop');
@@ -152,7 +161,21 @@ else  { //2eme cas de binop imbriqué
     binopStatement(binode, assemblyCode);
     const assemblyInstruction = `MOV eax, ebx\nMOV ebx, ${bigId}\n${bop2} ebx, eax`;
     assemblyCode.push(assemblyInstruction);
-}}
+}else if(binop_counter==2){
+  let op = getnode(node['children'],'op')["value"];
+  let bop = getOperator(op);
+  let filtred=node['children'].filter(item => item['node'] !== 'op');
+  let binode1=filtred[0];
+  let binode2=filtred[1];
+  binopStatement(binode1, assemblyCode);
+  assemblyCode.push(`MOV ecx, ebx`);
+  binopStatement(binode2, assemblyCode);
+  assemblyCode.push(`${bop} ebx, ecx`);
+
+
+
+}
+}
 function getOperator(operator) {
   // Map your custom condition to x86 assembly jump instruction
   let ops = {
