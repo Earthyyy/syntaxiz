@@ -24,7 +24,9 @@ function translateStatement(node, assemblyCode) {
           translateWhileLoop(node, assemblyCode);
       } else if (nodeType === "if") {
           translateIfStatement(node, assemblyCode);
-      }
+      }else if (nodeType === "for") {
+        translateForLoop(node, assemblyCode);
+    }
       // Add more cases for other statement types if needed
   }
 }
@@ -52,6 +54,31 @@ function getnode(children,id){
     if (node['node']==id){
       return node;
   }}
+
+}
+function translateForLoop(node,assemblyCode){
+  const iter = getnode(node["children"],'iter');
+  const body = getnode(node['children'],'body');
+  const id = getnode(iter['children'],'id')['value'];
+  let start= getnode(iter['children'],'start')['children'][0];
+  let end= getnode(iter['children'],'end')['children'][0];
+  if (start['node']=='id'){
+    start='|'+start['value']+'|'
+  }else if (start['node']=='constant'){
+    start=start['value']
+  }
+  if (end['node']=='id'){
+    end='|'+end['value']+'|'
+  }else if (end['node']=='constant'){
+    end=end['value']
+  }
+  const loopStartLabel = 'START_FOR_' + generateLabel();
+  const loopEndLabel = 'END_FOR_' + generateLabel();
+  assemblyCode.push(`MOV eax, ${start}\nMOV |start|, eax`);
+  assemblyCode.push(`${loopStartLabel}:`);
+  assemblyCode.push(`MOV eax, |start|\nMOV ebx, ${end}\nCMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
+  translateBody(body,assemblyCode)
+  assemblyCode.push(`MOV eax, |start|\nADD eax, 1\nMOV |start|, eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
 
 }
 
@@ -216,3 +243,7 @@ function generateLabel() {
   
     return `LABEL_${generateLabel.counter}`;
   }
+
+
+
+
