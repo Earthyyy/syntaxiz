@@ -23,6 +23,8 @@
   <a href="#installation">Installation</a>
   &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#roadmap">Roadmap</a>
+  &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#contributing">Contributing</a>
 
 </p>
 
@@ -86,6 +88,20 @@ The project is still under development, and may be extended later to a series of
 - [ ] Add support to Docker
 - [ ] Add support to `for` and `function calls` statements
 - [ ] Implement AutoLayout mechanism (Optional)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+
+Embracing collaboration is what fuels the heartbeat of the open-source community. Your contributions are not just welcomed but cherished.
+
+Should you have ideas for improvement, we invite you to fork the repository and initiate a pull request. Alternatively, feel free to open an issue, labeled 'enhancement,' to share your insights.
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feat/new-feature-name`)
+3. Commit your Changes (`git commit -m 'feat: add some new feature'`)
+4. Push to the Branch (`git push origin feat/new-feature-name`)
+5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
