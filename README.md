@@ -91,4 +91,4 @@ The project is still under development, and may be extended later to a series of
 
 <!-- MARKDOWN LINKS & IMAGES -->
 
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: images/demo.gif
