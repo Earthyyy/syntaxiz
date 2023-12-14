@@ -55,6 +55,8 @@ The project is still under development, and may be extended later to a series of
 
 ## Installation
 
+#### Using NPM
+
 1. Clone the repo
    ```sh
    git clone https://github.com/Earthyyy/syntaxiz
@@ -73,6 +75,22 @@ The project is still under development, and may be extended later to a series of
    ```
 5. Navigate to [http://localhost:3000](http://localhost:3000)
 
+#### Using Docker compose
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Earthyyy/syntaxiz
+   ```
+2. Navigate to the project directory
+   ```sh
+   cd syntaxiz
+   ```
+3. Run the docker compose command
+   ```sh
+    docker compose up
+   ```
+4. Navigate to [http://localhost:3000](http://localhost:3000)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- ROADMAP -->
@@ -85,7 +103,7 @@ The project is still under development, and may be extended later to a series of
 - [x] Add output section
 - [x] Add Dark Mode
 - [ ] Eliminate JS code
-- [ ] Add support to Docker
+- [x] Add support to Docker
 - [ ] Add support to `for` and `function calls` statements
 - [ ] Implement AutoLayout mechanism (Optional)
 
