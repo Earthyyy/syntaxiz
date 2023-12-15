@@ -37,16 +37,16 @@ function translateAssignment(node, assemblyCode) {
 
     if (valueNode["node"] === "constant") {
         const rightOperand = valueNode["value"];
-        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV |${id}|, eax`;
+        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV [${id}], eax`;
         assemblyCode.push(assemblyInstruction);
     } else if (valueNode["node"] === "binop") {
         binopStatement(valueNode, assemblyCode);
         let bigId = getnode(node['children'],'id')["value"];
-        const assemblyInstruction = `MOV |${bigId}|, ebx`;
+        const assemblyInstruction = `MOV [${bigId}], ebx`;
         assemblyCode.push(assemblyInstruction);
     }else if (valueNode["node"] === "id") {
-        const rightOperand = '|'+valueNode["value"]+'|';
-        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV |${id}|, eax`;
+        const rightOperand = '['+valueNode["value"]+']';
+        const assemblyInstruction = `MOV eax, ${rightOperand}\nMOV [${id}], eax`;
         assemblyCode.push(assemblyInstruction);
 }}
 function getnode(children,id){
@@ -63,22 +63,22 @@ function translateForLoop(node,assemblyCode){
   let start= getnode(iter['children'],'start')['children'][0];
   let end= getnode(iter['children'],'end')['children'][0];
   if (start['node']=='id'){
-    start='|'+start['value']+'|'
+    start='['+start['value']+']'
   }else if (start['node']=='constant'){
     start=start['value']
   }
   if (end['node']=='id'){
-    end='|'+end['value']+'|'
+    end='['+end['value']+']'
   }else if (end['node']=='constant'){
     end=end['value']
   }
   const loopStartLabel = 'START_FOR_' + generateLabel();
   const loopEndLabel = 'END_FOR_' + generateLabel();
-  assemblyCode.push(`MOV eax, ${start}\nMOV |start|, eax`);
+  assemblyCode.push(`MOV eax, ${start}\nMOV [start], eax`);
   assemblyCode.push(`${loopStartLabel}:`);
-  assemblyCode.push(`MOV eax, |start|\nMOV ebx, ${end}\nCMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
+  assemblyCode.push(`MOV eax, [start]\nMOV ebx, ${end}\nCMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
   translateBody(body,assemblyCode)
-  assemblyCode.push(`MOV eax, |start|\nADD eax, 1\nMOV |start|, eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
+  assemblyCode.push(`MOV eax, [start]\nADD eax, 1\nMOV [start], eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
 
 }
 
@@ -126,7 +126,7 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
       if (leftOperand['node'] == 'constant') {
           leftOperand = leftOperand['value'];
       } else if (leftOperand['node'] == 'id') {
-          leftOperand = '|' + leftOperand['value'] + '|';
+          leftOperand = '[' + leftOperand['value'] + ']';
       }
 
       const operator =getnode(comparenode["children"],'op')['value'];
@@ -134,7 +134,7 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
       if (rightOperand['node'] == 'constant') {
           assemblyCode.push(`MOV ebx, ${rightOperand['value']}`);
       } else if (rightOperand['node'] == 'id') {
-          assemblyCode.push(`MOV ebx, |${rightOperand['value']}|`);
+          assemblyCode.push(`MOV ebx, [${rightOperand['value']}]`);
       }else if (rightOperand['node']=='binop'){
         binopStatement(rightOperand,assemblyCode)
       }
@@ -163,13 +163,13 @@ function binopStatement(node, assemblyCode) {
   if (smallId['node']=='constant'){
     smallId=smallId['value']
   }else if(smallId['node']=='id'){
-    smallId='|'+smallId['value']+'|'
+    smallId='['+smallId['value']+']'
   }
   let right = filtred[1]; 
   if (right['node']=='constant'){
     right=right['value']
   }else if(right['node']=='id'){
-    right='|'+right['value']+'|'
+    right='['+right['value']+']'
   }
   const assemblyInstruction=`MOV ebx, ${smallId}\nMOV eax, ${right}\n${bop2} ebx, eax`;
   assemblyCode.push(assemblyInstruction);
@@ -180,7 +180,7 @@ else if(binop_counter==1)  { //2eme cas de binop imbriqué
   let bop2 = getOperator(op2);
   let filtred=node['children'].filter(item => item['node'] !== 'op'&&item['node'] !== 'binop');
   if (filtred[0]['node']=='id'){
-  var bigId= '|'+filtred[0]['value']+'|'
+  var bigId= '['+filtred[0]['value']+']'
 }else if (filtred[0]['node']=='constant'){
   var bigId=  filtred[0]['value'];
 }
