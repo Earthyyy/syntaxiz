@@ -6,6 +6,7 @@ import Navbar from "@/components/header/navbar";
 import { ReactFlowProvider } from "reactflow";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
             >
               <Navbar />
               {children}
+              <Toaster />
             </ThemeProvider>
           </QueryClientProvider>
         </ReactFlowProvider>

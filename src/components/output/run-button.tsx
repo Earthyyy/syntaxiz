@@ -6,6 +6,8 @@ import axios from "axios";
 import useDataStore from "@/hooks/use-data-store";
 import { useMutation } from "react-query";
 import { cn } from "@/lib/utils";
+import { useToast } from "../ui/use-toast";
+import { ToastAction } from "@radix-ui/react-toast";
 
 type NodeData = {
   label: string;
@@ -15,6 +17,7 @@ type NodeData = {
 
 const RunButton = () => {
   const store = useReactFlow();
+  const { toast } = useToast();
   const updateData = useDataStore((state) => state.updateData);
   const { getNodes, getEdges } = store;
 
@@ -50,6 +53,15 @@ const RunButton = () => {
     },
     onSuccess: (data) => {
       updateData(data);
+    },
+    onError: () => {
+      toast({
+        title: "Something went wrong!",
+        description:
+          "Make sure that the AST is valid.\nIf the problem persists, please open an issue on GitHub.",
+        variant: "destructive",
+        duration: 3000,
+      });
     },
   });
   return (
