@@ -119,57 +119,42 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
 function binopStatement(node, assemblyCode) {
   var binop_counter=0;
   for (let subnode of node['children'] ){
-    // console.log(counter['node'])
     if (subnode['node']=='binop'){
       binop_counter++;
-
-    }
-    
+    } 
   }
 
   if(binop_counter==0){ //1er cas de binop simple
-  let op2 = getNode(node['children'],'op')["value"];
-  let bop2 = getOperator(op2);
+  let bop = getOperator(getNode(node['children'],'op')["value"]);
   let filtred=node['children'].filter(item => item['node'] !== 'op');
-  let smallId = filtred[0];
-  moveValueIntoRegister(smallId,'ebx',assemblyCode)
+  let left = filtred[0];
+  moveValueIntoRegister(left,'ebx',assemblyCode)
   let right = filtred[1]; 
-  if (right['node']=='constant'){
-    right=right['value']
-  }else if(right['node']=='id'){
-    right='['+right['value']+']'
-  }
   moveValueIntoRegister(right,'eax',assemblyCode)
-  const assemblyInstruction=`${bop2} ebx, eax`;
+  const assemblyInstruction=`${bop} ebx, eax`;
   assemblyCode.push(assemblyInstruction);
-
-}
-else if(binop_counter==1)  { //2eme cas de binop imbriqué 
-  let op2 = getNode(node['children'],'op')["value"];
-  let bop2 = getOperator(op2);
-  let filtred=node['children'].filter(item => item['node'] !== 'op'&&item['node'] !== 'binop');
-  if (filtred[0]['node']=='id'){
-  var bigId= '['+filtred[0]['value']+']'
-}else if (filtred[0]['node']=='constant'){
-  var bigId=  filtred[0]['value'];
-}
-  let binode=getNode(node['children'],'binop');
-    binopStatement(binode, assemblyCode);
-    const assemblyInstruction = `MOV eax, ebx\nMOV ebx, ${bigId}\n${bop2} ebx, eax`;
-    assemblyCode.push(assemblyInstruction);
+}else if(binop_counter==1)  { //2eme cas de binop imbriqué 
+  let bop = getOperator(getNode(node['children'],'op')["value"]);
+  let filtred=node['children'].filter(item => item['node'] !== 'op');
+  let operand1=filtred[0]
+  let operand2=filtred[1]
+  if (operand1['node']=='binop'){
+    moveValueIntoRegister(operand1,'ebx',assemblyCode)
+    moveValueIntoRegister(operand2,'eax',assemblyCode)
+  }else{
+    moveValueIntoRegister(operand2,'eax',assemblyCode)
+    moveValueIntoRegister(operand1,'ebx',assemblyCode)
+  }
+  assemblyCode.push(`${bop} ebx, eax`);
 }else if(binop_counter==2){
-  let op = getNode(node['children'],'op')["value"];
-  let bop = getOperator(op);
+  let bop = getOperator(getNode(node['children'],'op')["value"]);
   let filtred=node['children'].filter(item => item['node'] !== 'op');
   let binode1=filtred[0];
   let binode2=filtred[1];
-  binopStatement(binode1, assemblyCode);
-  assemblyCode.push(`MOV ecx, ebx`);
   binopStatement(binode2, assemblyCode);
+  assemblyCode.push(`MOV ecx, ebx`);
+  binopStatement(binode1, assemblyCode);
   assemblyCode.push(`${bop} ebx, ecx`);
-
-
-
 }
 }
 function moveValueIntoRegister(node,register,assemblyCode){ 
