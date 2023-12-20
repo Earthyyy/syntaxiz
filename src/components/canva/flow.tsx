@@ -245,6 +245,112 @@ const Flow = () => {
           );
         }
       }
+
+      if (content === "For") {
+        // Create two children , first called iter and second body, iter will have three children id , start , end
+        const iterNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: position.x - 100, y: position.y + 100 },
+          data: { label: "iter", value: null },
+        };
+
+        const bodyNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: position.x + 100, y: position.y + 100 },
+          data: { label: "body", value: null },
+        };
+
+        const { position: iterPosition } = iterNode;
+
+        const idNode: Node = {
+          id: getId(),
+          type: "inputTreeNode",
+          position: { x: iterPosition.x - 100, y: iterPosition.y + 100 },
+          data: { label: "Id", value: null },
+        };
+
+        const startNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: iterPosition.x + 100, y: iterPosition.y + 100 },
+          data: { label: "start", value: null },
+        };
+
+        const endNode: Node = {
+          id: getId(),
+          type: "simpleTreeNode",
+          position: { x: iterPosition.x + 300, y: iterPosition.y + 100 },
+          data: { label: "end", value: null },
+        };
+
+        setNodes((nds) => nds.concat(iterNode));
+        setNodes((nds) => nds.concat(startNode));
+        setNodes((nds) => nds.concat(endNode));
+        setNodes((nds) => nds.concat(bodyNode));
+        setNodes((nds) => nds.concat(idNode));
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: newNode.id,
+              target: iterNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: iterNode.id,
+              target: idNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: iterNode.id,
+              target: startNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: iterNode.id,
+              target: endNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+
+        setEdges((eds) =>
+          addEdge(
+            {
+              id: generateId(),
+              source: newNode.id,
+              target: bodyNode.id,
+              animated: true,
+            },
+            eds
+          )
+        );
+      }
     },
     [reactFlowInstance, setEdges, setNodes]
   );
