@@ -104,7 +104,7 @@ The project is still under development, and may be extended later to a series of
 - [x] Add Dark Mode
 - [ ] Eliminate JS code
 - [x] Add support to Docker
-- [ ] Add support to `for` and `function calls` statements
+- [x] Add support to `for` statements
 - [ ] Implement AutoLayout mechanism (Optional)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
