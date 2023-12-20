@@ -42,6 +42,7 @@ const Sidebar = () => {
             <ul>
               <ListItem content="If" handler={onDragStart} />
               <ListItem content="While" handler={onDragStart} />
+              <ListItem content="For" handler={onDragStart} />
             </ul>
           </AccordionContent>
         </AccordionItem>
