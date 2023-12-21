@@ -93,25 +93,28 @@ function translateForLoop(node,assemblyCode){
   translateBody(body,assemblyCode)
   assemblyCode.push(`MOV eax, [start]\nADD eax, 1\nMOV [start], eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
 }
-function translateCondition(condition, jumpLabel,jumpmode, assemblyCode) {
-  if (condition['node']=='compare'){
+function translateCompareCondition(condition, jumpLabel,jumpmode, assemblyCode){
       const operator =getNode(condition["children"],'op')['value'];
       const rightOperand = condition["children"][2];
-      const leftOperand = condition["children"][0];   
+      const leftOperand = condition["children"][0];  
+
       moveValueIntoRegister(leftOperand,'edx',assemblyCode)
       moveValueIntoRegister(rightOperand,'ebx',assemblyCode)
       assemblyCode.push(`CMP edx, ebx`);
+
       if(jumpmode=='false'){
       assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
     }else if (jumpmode=='true'){
       assemblyCode.push(`JUMP_IF_${getJumpInstruction(operator)} ${jumpLabel}`);
     }
 }
-else if (condition['node']=='boolop'){
+function translateBoolopCondition(condition, jumpLabel,jumpmode, assemblyCode){
   const boolOperator = getNode(condition["children"],"op")["value"];
   if (boolOperator=='and'){
+
     translateCondition(condition["children"][0],jumpLabel,'false',assemblyCode);
-    translateCondition(condition["children"][2],jumpLabel,'false',assemblyCode);   
+    translateCondition(condition["children"][2],jumpLabel,'false',assemblyCode);  
+
   }else if (boolOperator=='or'){
     let jumpIfTrueLabel=generateLabel()+"_TRUE";
 
@@ -119,14 +122,15 @@ else if (condition['node']=='boolop'){
     translateCondition(condition["children"][2],jumpIfTrueLabel,'true',assemblyCode);
 
     assemblyCode.push(`JUMP ${jumpLabel}`);
-
     assemblyCode.push(`${jumpIfTrueLabel}:`);
-
   }
-  
-
 }
-
+function translateCondition(condition, jumpLabel,jumpmode, assemblyCode) {
+  if (condition['node']=='compare'){
+    translateCompareCondition(condition, jumpLabel,jumpmode, assemblyCode)
+  }else if (condition['node']=='boolop'){
+    translateBoolopCondition(condition, jumpLabel,jumpmode, assemblyCode)
+}
 }
 function binopStatement(node, assemblyCode) {
 var binop_counter=0;
