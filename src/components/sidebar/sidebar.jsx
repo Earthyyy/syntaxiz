@@ -46,9 +46,9 @@ const Sidebar = () => {
             </ul>
           </AccordionContent>
         </AccordionItem>
-        <AccordionItem value="terminal-units">
+        <AccordionItem value="leaf-nodes">
           <AccordionTrigger className="dark:hover:bg-[#212225] dark:hover:text-white dark:text-gray-400 mb-2 h-[33px] text-accordion hover:text-accordion-foreground">
-            Terminal Units
+            Leaf Nodes
           </AccordionTrigger>
           <AccordionContent>
             <ul>
