@@ -6,8 +6,8 @@ function translateProgram(tree, assemblyCode) {
   translateBody(tree, assemblyCode);
 }
 function translateBody(nodes, assemblyCode) {
-let childs=nodes["children"]  
-const nodeValues = Object.values(childs);
+let children=nodes["children"]  
+const nodeValues = Object.values(children);
 
 for (let node of nodeValues) {
     translateStatement(node, assemblyCode);
@@ -50,8 +50,8 @@ function translateIfStatement(node, assemblyCode) {
 
   translateCondition(condition, elseBody ? elseLabel : endIfLabel, assemblyCode);
   translateBody(body, assemblyCode);
-  assemblyCode.push(`JUMP ${endIfLabel}`);
   if (elseBody) {
+    assemblyCode.push(`JUMP ${endIfLabel}`);
     assemblyCode.push(`${elseLabel}:`);
     translateBody(elseBody, assemblyCode);
   }
@@ -81,26 +81,15 @@ function translateForLoop(node,assemblyCode){
   let start= getNode(iter['children'],'start')['children'][0];
   let end= getNode(iter['children'],'end')['children'][0];
 
-
-  if (start['node']=='id'){
-    start='['+start['value']+']'
-  }else if (start['node']=='constant'){
-    start=start['value']
-  }
-  if (end['node']=='id'){
-    end='['+end['value']+']'
-  }else if (end['node']=='constant'){
-    end=end['value']
-  }
-
-
   const loopStartLabel = 'START_FOR_' + generateLabel();
   const loopEndLabel = 'END_FOR_' + generateLabel();
 
-
-  assemblyCode.push(`MOV eax, ${start}\nMOV [start], eax`);
+  moveValueIntoRegister(start,'eax',assemblyCode)
+  assemblyCode.push(`MOV [start], eax`);
   assemblyCode.push(`${loopStartLabel}:`);
-  assemblyCode.push(`MOV eax, [start]\nMOV ebx, ${end}\nCMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
+  assemblyCode.push(`MOV eax, [start]`);
+  moveValueIntoRegister(end,'ebx',assemblyCode)
+  assemblyCode.push(`CMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
   translateBody(body,assemblyCode)
   assemblyCode.push(`MOV eax, [start]\nADD eax, 1\nMOV [start], eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
 }
@@ -111,9 +100,9 @@ function translateCondition(condition, jumpLabel, assemblyCode) {
       const leftOperand = comparenode["children"][0];   
 
 
+      moveValueIntoRegister(leftOperand,'edx',assemblyCode)
       moveValueIntoRegister(rightOperand,'ebx',assemblyCode)
-      moveValueIntoRegister(leftOperand,'eax',assemblyCode)
-      assemblyCode.push(`CMP eax, ebx`);
+      assemblyCode.push(`CMP edx, ebx`);
       assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
 }
 function binopStatement(node, assemblyCode) {
@@ -164,8 +153,8 @@ if (node["node"] === "constant") {
 
 }else if (node["node"] === "binop") {
   binopStatement(node, assemblyCode);
-  if(register=='eax'){
-    assemblyCode.push(`MOV eax, ebx`);
+  if(register!=='ebx'){
+    assemblyCode.push(`MOV ${register}, ebx`);
   }
 
   }else if (node["node"] === "id") {
