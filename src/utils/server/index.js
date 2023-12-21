@@ -48,7 +48,7 @@ function translateIfStatement(node, assemblyCode) {
   const endIfLabel = 'END_IF_'+generateLabel();
 
 
-  translateCondition(condition, elseBody ? elseLabel : endIfLabel, assemblyCode);
+  translateCondition(condition['children'][0], elseBody ? elseLabel : endIfLabel,'false', assemblyCode);
   translateBody(body, assemblyCode);
   if (elseBody) {
     assemblyCode.push(`JUMP ${endIfLabel}`);
@@ -62,13 +62,13 @@ function translateWhileLoop(node, assemblyCode) {
   const body = node["children"][1];
 
 
-  const loopStartLabel = 'START_WHILE_' + generateLabel();
-  const loopEndLabel = 'END_WHILE_' + generateLabel();
+  const loopStartLabel = 'START_WHILE_' + generateLabel()+':';
+  const loopEndLabel = 'END_WHILE_' + generateLabel()+':';
 
 
   assemblyCode.push(`${loopStartLabel}:`);
   if (condition["node"] === "test") {
-    translateCondition(condition, loopEndLabel, assemblyCode);
+    translateCondition(condition, loopEndLabel,'false', assemblyCode);
   } 
   translateBody(body, assemblyCode);
   assemblyCode.push(`JUMP ${loopStartLabel}`);
@@ -81,8 +81,8 @@ function translateForLoop(node,assemblyCode){
   let start= getNode(iter['children'],'start')['children'][0];
   let end= getNode(iter['children'],'end')['children'][0];
 
-  const loopStartLabel = 'START_FOR_' + generateLabel();
-  const loopEndLabel = 'END_FOR_' + generateLabel();
+  const loopStartLabel = 'START_FOR_' + generateLabel()+':';
+  const loopEndLabel = 'END_FOR_' + generateLabel()+':';
 
   moveValueIntoRegister(start,'eax',assemblyCode)
   assemblyCode.push(`MOV [start], eax`);
@@ -93,17 +93,44 @@ function translateForLoop(node,assemblyCode){
   translateBody(body,assemblyCode)
   assemblyCode.push(`MOV eax, [start]\nADD eax, 1\nMOV [start], eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `);
 }
-function translateCondition(condition, jumpLabel, assemblyCode) {
-      let comparenode=condition["children"][0];
-      const operator =getNode(comparenode["children"],'op')['value'];
-      const rightOperand = comparenode["children"][2];
-      const leftOperand = comparenode["children"][0];   
-
+function translateCompareCondition(condition, jumpLabel,jumpmode, assemblyCode){
+      const operator =getNode(condition["children"],'op')['value'];
+      const rightOperand = condition["children"][2];
+      const leftOperand = condition["children"][0];  
 
       moveValueIntoRegister(leftOperand,'edx',assemblyCode)
       moveValueIntoRegister(rightOperand,'ebx',assemblyCode)
       assemblyCode.push(`CMP edx, ebx`);
+
+      if(jumpmode=='false'){
       assemblyCode.push(`JUMP_IF_NOT_${getJumpInstruction(operator)} ${jumpLabel}`);
+    }else if (jumpmode=='true'){
+      assemblyCode.push(`JUMP_IF_${getJumpInstruction(operator)} ${jumpLabel}`);
+    }
+}
+function translateBoolopCondition(condition, jumpLabel,jumpmode, assemblyCode){
+  const boolOperator = getNode(condition["children"],"op")["value"];
+  if (boolOperator=='and'){
+
+    translateCondition(condition["children"][0],jumpLabel,'false',assemblyCode);
+    translateCondition(condition["children"][2],jumpLabel,'false',assemblyCode);  
+
+  }else if (boolOperator=='or'){
+    let jumpIfTrueLabel=generateLabel()+"_TRUE";
+
+    translateCondition(condition["children"][0],jumpIfTrueLabel,'true',assemblyCode);
+    translateCondition(condition["children"][2],jumpIfTrueLabel,'true',assemblyCode);
+
+    assemblyCode.push(`JUMP ${jumpLabel}`);
+    assemblyCode.push(`${jumpIfTrueLabel}:`);
+  }
+}
+function translateCondition(condition, jumpLabel,jumpmode, assemblyCode) {
+  if (condition['node']=='compare'){
+    translateCompareCondition(condition, jumpLabel,jumpmode, assemblyCode)
+  }else if (condition['node']=='boolop'){
+    translateBoolopCondition(condition, jumpLabel,jumpmode, assemblyCode)
+}
 }
 function binopStatement(node, assemblyCode) {
 var binop_counter=0;
@@ -202,3 +229,89 @@ function generateLabel() {
 
   return `LABEL_${generateLabel.counter}`;
 }
+
+const syntaxTree1={
+  "node":"body",
+  "children":[
+  {
+    "node": "if",
+    "value":null,
+    "children": [
+      {
+          "node": "test",
+          "children": [
+            {
+              "node": "boolop",
+              "children": [
+                {
+                  "node": "compare",
+                  "children": [
+                    { "node": "id", "value": "x", "children": null },
+                    { "node": "op", "value": ">", "children": null },
+                    { "node": "constant", "value": 5, "children": null }
+                  ]
+                },
+                { "node": "op", "value": "or", "children": null },
+                {
+                  "node": "compare",
+                  "children": [
+                    { "node": "id", "value": "y", "children": null },
+                    { "node": "op", "value": "<", "children": null },
+                    { "node": "constant", "value": 10, "children": null }
+                  ]
+                }
+              ]
+            }]},
+      {
+        "node": "body",
+        "children": [
+          {
+            "node": "assign",
+            "children": [
+              {
+                "node": "id",
+                "value": "a"
+              },
+              {
+                "node": "binop",
+                "children": [
+                  { "node": "id", "value": "m" },
+                  { "node": "op", "value": "+" },
+                  { "node": "constant", "value": 10 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "node": "orelse",
+        "children": [
+          {
+            "node": "assign",
+            "children": [
+              {
+                "node": "id",
+                "value": "a"
+              },
+              {
+                "node": "binop",
+                "children": [
+                  { "node": "id", "value": "t" },
+                  { "node": "op", "value": "-" },
+                  { "node": "constant", "value": 18 }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  ]
+};
+// const assemblyCode = [];
+// translateProgram(syntaxTree1, assemblyCode);
+// for (i in assemblyCode){
+//   console.log(assemblyCode[i]);
+// }
