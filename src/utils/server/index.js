@@ -67,14 +67,13 @@ function translateWhileLoop(node, assemblyCode) {
   const loopEndLabel = "END_WHILE_" + generateLabel();
 
   assemblyCode.push(`${loopStartLabel}:`);
-  if (condition["node"] === "test") {
     translateCondition(
       condition["children"][0],
       loopEndLabel,
       "false",
       assemblyCode
     );
-  }
+  
   translateBody(body, assemblyCode);
   assemblyCode.push(`JUMP ${loopStartLabel}`);
   assemblyCode.push(`${loopEndLabel}:`);
@@ -86,19 +85,23 @@ function translateForLoop(node, assemblyCode) {
   let start = getNode(iter["children"], "start")["children"][0];
   let end = getNode(iter["children"], "end")["children"][0];
 
-  const loopStartLabel = "START_FOR_" + generateLabel() + ":";
-  const loopEndLabel = "END_FOR_" + generateLabel() + ":";
+  const loopStartLabel = "START_FOR_" + generateLabel();
+  const loopEndLabel = "END_FOR_" + generateLabel();
 
   moveValueIntoRegister(start, "eax", assemblyCode);
   assemblyCode.push(`MOV [start], eax`);
   assemblyCode.push(`${loopStartLabel}:`);
   assemblyCode.push(`MOV eax, [start]`);
   moveValueIntoRegister(end, "ebx", assemblyCode);
-  assemblyCode.push(`CMP eax, ebx\nJUMP_IF_NOT_LESS ${loopEndLabel} `);
+  assemblyCode.push(`CMP eax, ebx`);
+  assemblyCode.push(`JUMP_IF_NOT_LESS ${loopEndLabel} `);
   translateBody(body, assemblyCode);
-  assemblyCode.push(
-    `MOV eax, [start]\nADD eax, 1\nMOV [start], eax\nJUMP ${loopStartLabel}\n${loopEndLabel} `
-  );
+  assemblyCode.push(`MOV eax, [start]`);
+  assemblyCode.push(`ADD eax, 1`);
+  assemblyCode.push(`MOV [start], eax`);
+  assemblyCode.push(`JUMP ${loopStartLabel}`);
+  assemblyCode.push(`${loopEndLabel}: `)
+
 }
 function translateCompareCondition(
   condition,
@@ -267,90 +270,4 @@ function generateLabel() {
   return `LABEL_${generateLabel.counter}`;
 }
 
-const syntaxTree1 = {
-  node: "body",
-  children: [
-    {
-      node: "if",
-      value: null,
-      children: [
-        {
-          node: "test",
-          children: [
-            {
-              node: "boolop",
-              children: [
-                {
-                  node: "compare",
-                  children: [
-                    { node: "id", value: "x", children: null },
-                    { node: "op", value: ">", children: null },
-                    { node: "constant", value: 5, children: null },
-                  ],
-                },
-                { node: "op", value: "or", children: null },
-                {
-                  node: "compare",
-                  children: [
-                    { node: "id", value: "y", children: null },
-                    { node: "op", value: "<", children: null },
-                    { node: "constant", value: 10, children: null },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          node: "body",
-          children: [
-            {
-              node: "assign",
-              children: [
-                {
-                  node: "id",
-                  value: "a",
-                },
-                {
-                  node: "binop",
-                  children: [
-                    { node: "id", value: "m" },
-                    { node: "op", value: "+" },
-                    { node: "constant", value: 10 },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          node: "orelse",
-          children: [
-            {
-              node: "assign",
-              children: [
-                {
-                  node: "id",
-                  value: "a",
-                },
-                {
-                  node: "binop",
-                  children: [
-                    { node: "id", value: "t" },
-                    { node: "op", value: "-" },
-                    { node: "constant", value: 18 },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-// const assemblyCode = [];
-// translateProgram(syntaxTree1, assemblyCode);
-// for (i in assemblyCode){
-//   console.log(assemblyCode[i]);
-// }
+
