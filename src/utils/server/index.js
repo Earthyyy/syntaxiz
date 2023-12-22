@@ -67,13 +67,13 @@ function translateWhileLoop(node, assemblyCode) {
   const loopEndLabel = "END_WHILE_" + generateLabel();
 
   assemblyCode.push(`${loopStartLabel}:`);
-    translateCondition(
-      condition["children"][0],
-      loopEndLabel,
-      "false",
-      assemblyCode
-    );
-  
+  translateCondition(
+    condition["children"][0],
+    loopEndLabel,
+    "false",
+    assemblyCode
+  );
+
   translateBody(body, assemblyCode);
   assemblyCode.push(`JUMP ${loopStartLabel}`);
   assemblyCode.push(`${loopEndLabel}:`);
@@ -88,20 +88,19 @@ function translateForLoop(node, assemblyCode) {
   const loopStartLabel = "START_FOR_" + generateLabel();
   const loopEndLabel = "END_FOR_" + generateLabel();
 
-  moveValueIntoRegister(start, "eax", assemblyCode);
-  assemblyCode.push(`MOV [start], eax`);
+  moveValueIntoRegister(start, "edx", assemblyCode);
+  assemblyCode.push(`MOV [${id}], edx`);
   assemblyCode.push(`${loopStartLabel}:`);
-  assemblyCode.push(`MOV eax, [start]`);
+  assemblyCode.push(`MOV edx, [${id}]`);
   moveValueIntoRegister(end, "ebx", assemblyCode);
-  assemblyCode.push(`CMP eax, ebx`);
+  assemblyCode.push(`CMP edx, ebx`);
   assemblyCode.push(`JUMP_IF_NOT_LESS ${loopEndLabel} `);
   translateBody(body, assemblyCode);
-  assemblyCode.push(`MOV eax, [start]`);
-  assemblyCode.push(`ADD eax, 1`);
-  assemblyCode.push(`MOV [start], eax`);
+  assemblyCode.push(`MOV edx, [${id}]`);
+  assemblyCode.push(`ADD edx, 1`);
+  assemblyCode.push(`MOV [${id}], edx`);
   assemblyCode.push(`JUMP ${loopStartLabel}`);
-  assemblyCode.push(`${loopEndLabel}: `)
-
+  assemblyCode.push(`${loopEndLabel}: `);
 }
 function translateCompareCondition(
   condition,
@@ -269,5 +268,3 @@ function generateLabel() {
 
   return `LABEL_${generateLabel.counter}`;
 }
-
-
